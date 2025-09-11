@@ -1,50 +1,101 @@
 "use client";
 
-import { ReactNode } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import Collapse from "@mui/material/Collapse";
+import List from "@mui/material/List";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { MenuItem } from "./types";
+import { getIcon } from "./icon-utils";
 
 interface NavigationItemProps {
-  text: string;
-  icon: ReactNode;
-  href?: string;
+  item: MenuItem;
   isOpen: boolean;
-  onClick?: () => void;
+  level?: number;
+  openMenu?: string | null;
+  onMenuClick?: (menuLabel: string, shouldOpen: boolean) => void;
 }
 
 export const NavigationItem = ({ 
-  text, 
-  icon, 
-  href, 
-  isOpen, 
-  onClick 
+  item,
+  isOpen,
+  level = 0,
+  openMenu,
+  onMenuClick
 }: NavigationItemProps) => {
   const pathname = usePathname();
+  const hasChildren = item.items && item.items.length > 0;
   
-  // Verifica se está ativo considerando:
-  // 1. Path exato (/dashboard === /dashboard)
-  // 2. Path que começa com href (/dashboard/analytics com href="/dashboard")
-  // 3. Casos especiais como "/campaign" ativo quando em "/campaign"
-  const isActive = href ? (
-    pathname === href || 
-    pathname.startsWith(href + '/') ||
-    (href !== '/' && pathname.includes(href.split('/').pop() || ''))
-  ) : false;
+  // Função para verificar se um caminho está ativo
+  const isPathActive = (path: string) => {
+    // Normaliza os caminhos removendo barras extras
+    const normalizedPathname = pathname.replace(/\/+/g, '/');
+    const normalizedPath = path.replace(/\/+/g, '/');
+    
+    return normalizedPathname === normalizedPath || 
+           normalizedPathname.startsWith(normalizedPath + '/');
+  };
+
+  // Verifica se o item atual está ativo
+  const isActive = item.path ? isPathActive(item.path) : false;
+  
+  // Log temporário para debug
+  console.log(`Item: ${item.label}, Path: ${item.path}, Current: ${pathname}, Active: ${isActive}`);
+
+  // Verifica recursivamente se algum filho está ativo
+  const checkActiveChild = (items: MenuItem[]): boolean => {
+    return items.some(child => {
+      if (child.path && isPathActive(child.path)) {
+        return true;
+      }
+      if (child.items && child.items.length > 0) {
+        return checkActiveChild(child.items);
+      }
+      return false;
+    });
+  };
+
+  const hasActiveChild = hasChildren ? checkActiveChild(item.items!) : false;
+
+  // Para itens de nível 0 (principais), usa estado compartilhado
+  // Para subitens, sempre expand se tem filhos ativos
+  const expanded = level === 0 
+    ? (openMenu === item.label || hasActiveChild)
+    : hasActiveChild;
+
+  // Auto-expand quando há filhos ativos
+  useEffect(() => {
+    if (hasActiveChild && level === 0 && onMenuClick) {
+      onMenuClick(item.label, true);
+    }
+  }, [hasActiveChild, level, item.label, onMenuClick]);
+
+  const handleClick = () => {
+    if (hasChildren && level === 0 && onMenuClick) {
+      const shouldOpen = openMenu !== item.label;
+      onMenuClick(item.label, shouldOpen);
+    }
+  };
+
+  const icon = getIcon(item.icon);
+  const expandIcon = expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />;
 
   const buttonContent = (
     <ListItemButton
-      onClick={onClick}
+      onClick={handleClick}
       sx={[
         {
           minHeight: 48,
           px: 2.5,
-          backgroundColor: isActive ? "action.selected" : "transparent",
+          pl: level > 0 ? 4 + (level * 1.5) : 2.5,
+          backgroundColor: (isActive || hasActiveChild) ? "action.selected" : "transparent",
           "&:hover": {
-            backgroundColor: isActive ? "action.selected" : "action.hover",
+            backgroundColor: (isActive || hasActiveChild) ? "action.selected" : "action.hover",
           },
         },
         isOpen
@@ -61,7 +112,7 @@ export const NavigationItem = ({
           {
             minWidth: 0,
             justifyContent: "center",
-            color: isActive ? "primary.main" : "inherit",
+            color: (isActive || hasActiveChild) ? "primary.main" : "inherit",
           },
           isOpen
             ? {
@@ -75,11 +126,11 @@ export const NavigationItem = ({
         {icon}
       </ListItemIcon>
       <ListItemText
-        primary={text}
+        primary={item.label}
         sx={[
           {
-            color: isActive ? "primary.main" : "inherit",
-            fontWeight: isActive ? 600 : 400,
+            color: (isActive || hasActiveChild) ? "primary.main" : "inherit",
+            fontWeight: (isActive || hasActiveChild) ? 600 : 400,
           },
           isOpen
             ? {
@@ -90,18 +141,48 @@ export const NavigationItem = ({
               },
         ]}
       />
+      {hasChildren && isOpen && (
+        <ListItemIcon
+          sx={{
+            minWidth: 0,
+            justifyContent: "center",
+            color: (isActive || hasActiveChild) ? "primary.main" : "inherit",
+          }}
+        >
+          {expandIcon}
+        </ListItemIcon>
+      )}
     </ListItemButton>
   );
 
   return (
-    <ListItem disablePadding sx={{ display: "block" }}>
-      {href ? (
-        <Link href={href} style={{ textDecoration: "none", color: "inherit" }}>
-          {buttonContent}
-        </Link>
-      ) : (
-        buttonContent
+    <>
+      <ListItem disablePadding sx={{ display: "block" }}>
+        {item.path && !hasChildren ? (
+          <Link href={item.path} style={{ textDecoration: "none", color: "inherit" }}>
+            {buttonContent}
+          </Link>
+        ) : (
+          buttonContent
+        )}
+      </ListItem>
+      
+      {hasChildren && (
+        <Collapse in={expanded} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {item.items?.map((subItem) => (
+              <NavigationItem
+                key={subItem.label}
+                item={subItem}
+                isOpen={isOpen}
+                level={level + 1}
+                openMenu={openMenu}
+                onMenuClick={onMenuClick}
+              />
+            ))}
+          </List>
+        </Collapse>
       )}
-    </ListItem>
+    </>
   );
 };

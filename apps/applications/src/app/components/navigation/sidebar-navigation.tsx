@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useState, useCallback } from "react";
 import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
 import { NavigationItem } from "./navigation-item";
@@ -19,6 +19,16 @@ export const SidebarNavigation = ({
   logo,
   header,
 }: SidebarNavigationProps) => {
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+
+  const handleMenuClick = useCallback((menuLabel: string, shouldOpen: boolean) => {
+    if (shouldOpen) {
+      setOpenMenu(menuLabel);
+    } else {
+      setOpenMenu(null);
+    }
+  }, []);
+
   return (
     <>
       {(logo || header) && (
@@ -33,11 +43,11 @@ export const SidebarNavigation = ({
       <List>
         {items.map((item) => (
           <NavigationItem
-            key={item.text}
-            text={item.text}
-            icon={item.icon}
-            href={item.href}
+            key={item.label}
+            item={item}
             isOpen={isOpen}
+            openMenu={openMenu}
+            onMenuClick={handleMenuClick}
           />
         ))}
       </List>

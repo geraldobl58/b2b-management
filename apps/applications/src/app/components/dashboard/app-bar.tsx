@@ -18,7 +18,13 @@ export const DashboardAppBar = ({
   title = "Dashboard",
 }: DashboardAppBarProps) => {
   return (
-    <StyledAppBar position="fixed" open={open}>
+    <StyledAppBar
+      position="fixed"
+      open={open}
+      color="inherit"
+      elevation={0}
+      className="border-b border-gray-200"
+    >
       <Toolbar>
         <IconButton
           color="inherit"
