@@ -1,15 +1,11 @@
-import { Typography } from "@mui/material";
+import { AuthForm } from "./components/auth-form";
 
-const Homepage = () => {
+const AuthPage = () => {
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <Typography variant="h3" component="h1" className="text-center mb-8">
-          Welcome to the Applications Page
-        </Typography>
-      </div>
+    <div className="container max-w-lg mx-auto my-8 p-8 ">
+      <AuthForm />
     </div>
   );
 };
 
-export default Homepage;
+export default AuthPage;
