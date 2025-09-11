@@ -1,0 +1,43 @@
+@layer theme, base, mui, components, utilities;
+
+@import "tailwindcss";
+
+@layer mui {
+  /* Material-UI specific overrides */
+  .MuiButton-root {
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  }
+  
+  .MuiTextField-root {
+    @apply focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-1;
+  }
+  
+  .MuiCard-root {
+    @apply border border-gray-200;
+  }
+  
+  /* Prevent Tailwind from interfering with MUI components */
+  .MuiButton-root,
+  .MuiTextField-root,
+  .MuiCard-root,
+  .MuiPaper-root,
+  .MuiAppBar-root,
+  .MuiDrawer-root {
+    @apply [all:unset];
+  }
+}
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply text-gray-900 bg-white;
+  }
+  
+  /* Ensure Material-UI components work properly with Tailwind */
+  * {
+    box-sizing: border-box;
+  }
+}
