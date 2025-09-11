@@ -12,7 +12,11 @@ interface DashboardAppBarProps {
   title?: string;
 }
 
-export const DashboardAppBar = ({ open, onDrawerOpen, title = "Dashboard" }: DashboardAppBarProps) => {
+export const DashboardAppBar = ({
+  open,
+  onDrawerOpen,
+  title = "Dashboard",
+}: DashboardAppBarProps) => {
   return (
     <StyledAppBar position="fixed" open={open}>
       <Toolbar>

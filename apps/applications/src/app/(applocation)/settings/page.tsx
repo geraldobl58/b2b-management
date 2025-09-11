@@ -3,17 +3,18 @@
 import { Typography } from "@mui/material";
 import { DashboardLayout } from "@/app/components/dashboard/app-layout";
 
-const Dashboard = () => {
+const Settings = () => {
   return (
-    <DashboardLayout title="Dashboard">
+    <DashboardLayout title="Configurações">
       <Typography variant="h4" sx={{ marginBottom: 2 }}>
-        Dashboard Principal
+        Configurações do Sistema
       </Typography>
       <Typography sx={{ marginBottom: 2 }}>
-        Bem-vindo ao sistema de gerenciamento B2B. Use o menu lateral para navegar entre as diferentes seções.
+        Esta é a página de configurações. Aqui você pode ajustar as preferências 
+        do sistema, gerenciar usuários e personalizar a aplicação.
       </Typography>
     </DashboardLayout>
   );
 };
 
-export default Dashboard;
+export default Settings;

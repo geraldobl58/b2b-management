@@ -3,17 +3,18 @@
 import { Typography } from "@mui/material";
 import { DashboardLayout } from "@/app/components/dashboard/app-layout";
 
-const Dashboard = () => {
+const Campaign = () => {
   return (
-    <DashboardLayout title="Dashboard">
+    <DashboardLayout title="Campanhas">
       <Typography variant="h4" sx={{ marginBottom: 2 }}>
-        Dashboard Principal
+        Campanhas de Marketing
       </Typography>
       <Typography sx={{ marginBottom: 2 }}>
-        Bem-vindo ao sistema de gerenciamento B2B. Use o menu lateral para navegar entre as diferentes seções.
+        Esta é a página de campanhas. Aqui você pode gerenciar todas as suas
+        campanhas de marketing e acompanhar o desempenho das mesmas.
       </Typography>
     </DashboardLayout>
   );
 };
 
-export default Dashboard;
+export default Campaign;

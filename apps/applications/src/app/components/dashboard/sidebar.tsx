@@ -1,33 +1,27 @@
 "use client";
 
-import List from "@mui/material/List";
-import Divider from "@mui/material/Divider";
-import { NavigationItem } from "./navigation-item";
 import { DrawerHeader } from "./drawer-header";
 import { StyledDrawer } from "./styles";
 import { primaryMenuItems } from "./navigation-data";
+import { MenuItem } from "../navigation/types";
+import { SidebarNavigation } from "../navigation/sidebar-navigation";
+import { Logo } from "../logo";
 
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
+  menuItems?: MenuItem[];
 }
 
-export const Sidebar = ({ open, onClose }: SidebarProps) => {
+export const Sidebar = ({ open, onClose, menuItems = primaryMenuItems }: SidebarProps) => {
   return (
     <StyledDrawer variant="permanent" open={open}>
-      <DrawerHeader onClose={onClose} />
-      <Divider />
-      <List>
-        {primaryMenuItems.map((item) => (
-          <NavigationItem
-            key={item.text}
-            text={item.text}
-            icon={item.icon}
-            open={open}
-          />
-        ))}
-      </List>
-      <Divider />
+      <SidebarNavigation
+        items={menuItems}
+        isOpen={open}
+        logo={<Logo />}
+        header={<DrawerHeader onClose={onClose} />}
+      />
     </StyledDrawer>
   );
 };

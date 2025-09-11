@@ -3,17 +3,18 @@
 import { Typography } from "@mui/material";
 import { DashboardLayout } from "@/app/components/dashboard/app-layout";
 
-const Dashboard = () => {
+const Analytics = () => {
   return (
-    <DashboardLayout title="Dashboard">
+    <DashboardLayout title="Análises">
       <Typography variant="h4" sx={{ marginBottom: 2 }}>
-        Dashboard Principal
+        Análises e Relatórios
       </Typography>
       <Typography sx={{ marginBottom: 2 }}>
-        Bem-vindo ao sistema de gerenciamento B2B. Use o menu lateral para navegar entre as diferentes seções.
+        Esta é a página de análises. Aqui você pode visualizar métricas e 
+        relatórios detalhados sobre o desempenho do seu negócio.
       </Typography>
     </DashboardLayout>
   );
 };
 
-export default Dashboard;
+export default Analytics;
