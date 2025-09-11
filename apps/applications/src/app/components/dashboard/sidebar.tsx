@@ -2,7 +2,7 @@
 
 import { DrawerHeader } from "./drawer-header";
 import { StyledDrawer } from "./styles";
-import { primaryMenuItems } from "./navigation-data";
+import { sidebarMenu } from "../navigation/menu";
 import { MenuItem } from "../navigation/types";
 import { SidebarNavigation } from "../navigation/sidebar-navigation";
 import { Logo } from "../logo";
@@ -13,7 +13,7 @@ interface SidebarProps {
   menuItems?: MenuItem[];
 }
 
-export const Sidebar = ({ open, onClose, menuItems = primaryMenuItems }: SidebarProps) => {
+export const Sidebar = ({ open, onClose, menuItems = sidebarMenu }: SidebarProps) => {
   return (
     <StyledDrawer variant="permanent" open={open}>
       <SidebarNavigation

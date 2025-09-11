@@ -5,8 +5,6 @@ import { InputAdornment, Paper, TextField } from "@mui/material";
 
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
-import "dayjs/locale/pt-br";
-
 import { DashboardLayout } from "@/app/components/dashboard/app-layout";
 
 const columns: GridColDef[] = [
@@ -25,7 +23,7 @@ const columns: GridColDef[] = [
     description: "This column has a value getter and is not sortable.",
     sortable: false,
     width: 160,
-    valueGetter: (value, row) => `${row.firstName || ""} ${row.lastName || ""}`,
+    valueGetter: (_, row) => `${row.firstName || ""} ${row.lastName || ""}`,
   },
 ];
 
@@ -51,12 +49,14 @@ const Campaign = () => {
           <TextField
             fullWidth
             placeholder="Buscar campanhas"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
         </div>

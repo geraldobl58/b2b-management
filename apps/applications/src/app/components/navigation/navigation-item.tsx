@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import ListItem from "@mui/material/ListItem";
@@ -43,9 +43,6 @@ export const NavigationItem = ({
 
   // Verifica se o item atual está ativo
   const isActive = item.path ? isPathActive(item.path) : false;
-  
-  // Log temporário para debug
-  console.log(`Item: ${item.label}, Path: ${item.path}, Current: ${pathname}, Active: ${isActive}`);
 
   // Verifica recursivamente se algum filho está ativo
   const checkActiveChild = (items: MenuItem[]): boolean => {

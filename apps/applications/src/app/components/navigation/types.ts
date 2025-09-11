@@ -11,7 +11,3 @@ export interface MenuItem {
   featureFlag?: string;
 }
 
-export interface NavigationConfig {
-  items: MenuItem[];
-  logo?: ReactNode;
-}
