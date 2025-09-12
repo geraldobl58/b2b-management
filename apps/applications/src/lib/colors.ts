@@ -45,3 +45,20 @@ export const getPlanColor = (
       return "default";
   }
 };
+
+export const getRoleLabel = (role: string): string => {
+  switch (role) {
+    case "OWNER":
+      return "Proprietário";
+    case "ADMIN":
+      return "Administrador";
+    case "MANAGER":
+      return "Gerente";
+    case "ANALYST":
+      return "Analista";
+    case "VIEWER":
+      return "Visualizador";
+    default:
+      return role;
+  }
+};

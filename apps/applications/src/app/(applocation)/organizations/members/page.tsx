@@ -1,88 +1,39 @@
 "use client";
 
-import { useState, FormEvent } from "react";
-
+import { useState } from "react";
+import { useParams } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/app-layout";
-import {
-  Button,
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { FormDialog } from "@/components/common";
+import { Button, Typography } from "@mui/material";
 import { ListMembers } from "./components/list-members";
+import { InviteMemberDialog } from "./components/invite-member-dialog";
+import { useMember } from "@/hooks/use-member";
+import { MemberInviteData } from "@/schemas/member";
 
 const OrganizationMembersPage = () => {
-  const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    role: "VIEWER",
-  });
-  const [formErrors, setFormErrors] = useState<{
-    email?: string;
-    role?: string;
-  }>({});
-  const [isLoading, setIsLoading] = useState(false);
+  const params = useParams();
+  const organizationId = params.organizationId as string || "";
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const { inviteMember, isInviting } = useMember();
 
-  const handleClickOpen = () => {
-    setOpen(true);
-    setFormData({ email: "", role: "VIEWER" });
-    setFormErrors({});
+  const handleOpenInviteDialog = () => {
+    setInviteDialogOpen(true);
   };
 
-  const handleClose = () => {
-    setOpen(false);
-    setFormData({ email: "", role: "VIEWER" });
-    setFormErrors({});
-    setIsLoading(false);
+  const handleCloseInviteDialog = () => {
+    setInviteDialogOpen(false);
   };
 
-  const validateForm = () => {
-    const errors: { email?: string; role?: string } = {};
+  const handleInviteMember = async (data: MemberInviteData) => {
+    const result = await inviteMember(organizationId, data, {
+      onSuccess: () => {
+        // A lista será atualizada automaticamente através do cache do React Query
+      },
+      onError: (error) => {
+        console.error("Erro ao convidar membro:", error);
+      },
+    });
 
-    if (!formData.email.trim()) {
-      errors.email = "E-mail é obrigatório";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = "E-mail inválido";
-    }
-
-    if (!formData.role) {
-      errors.role = "Função é obrigatória";
-    }
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // Simular chamada da API
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      console.log("Adicionando membro:", formData);
-
-      // Sucesso - fechar dialog
-      handleClose();
-
-      // Aqui você adicionaria a lógica para atualizar a lista
-      // Por exemplo: refetch da lista de membros
-    } catch (error) {
-      console.error("Erro ao adicionar membro:", error);
-      setFormErrors({ email: "Erro ao adicionar membro. Tente novamente." });
-    } finally {
-      setIsLoading(false);
-    }
+    return result;
   };
 
   return (
@@ -96,23 +47,24 @@ const OrganizationMembersPage = () => {
             <Typography sx={{ marginBottom: 2 }}>
               Esta é a página de membros da organização. Aqui você pode
               visualizar informações detalhadas sobre os membros da sua
-              organização.
+              organização e gerenciar convites.
             </Typography>
           </div>
           <div>
             <Button
               variant="contained"
               color="secondary"
-              onClick={handleClickOpen}
+              onClick={handleOpenInviteDialog}
             >
-              Adicionar Membro
+              Convidar Membro
             </Button>
           </div>
         </div>
         <div style={{ marginTop: 16 }}>
           <Typography variant="subtitle1">
             Abaixo está a lista de todos os membros associados à sua
-            organização.
+            organização. Você pode convidar novos membros, editar funções e
+            remover membros conforme sua permissão.
           </Typography>
         </div>
         <div>
@@ -120,67 +72,12 @@ const OrganizationMembersPage = () => {
         </div>
       </div>
 
-      <FormDialog
-        open={open}
-        onClose={handleClose}
-        title="Adicionar Novo Membro"
-        mode="create"
-        onSubmit={handleSubmit}
-        submitText="Adicionar Membro"
-        cancelText="Cancelar"
-        maxWidth="sm"
-        isLoading={isLoading}
-        hasErrors={Object.keys(formErrors).length > 0}
-      >
-        <div className="space-y-8">
-          <p className="text-gray-600 text-sm mb-4">
-            Para adicionar um novo membro, envie um convite por email.
-          </p>
-
-          <TextField
-            fullWidth
-            label="E-mail do Membro"
-            placeholder="Ex: membro@exemplo.com"
-            value={formData.email}
-            onChange={(e) => {
-              setFormData({ ...formData, email: e.target.value });
-              if (formErrors.email) {
-                setFormErrors({ ...formErrors, email: undefined });
-              }
-            }}
-            error={!!formErrors.email}
-            helperText={formErrors.email || "E-mail do membro a ser adicionado"}
-            required
-            disabled={isLoading}
-          />
-
-          <FormControl fullWidth error={!!formErrors.role}>
-            <InputLabel id="select-role-label">Função</InputLabel>
-            <Select
-              labelId="select-role-label"
-              value={formData.role}
-              label="Função"
-              onChange={(e) => {
-                setFormData({ ...formData, role: e.target.value });
-                if (formErrors.role) {
-                  setFormErrors({ ...formErrors, role: undefined });
-                }
-              }}
-              required
-              disabled={isLoading}
-            >
-              <MenuItem value="VIEWER">Visualizador</MenuItem>
-              <MenuItem value="ANALYST">Analista</MenuItem>
-              <MenuItem value="MANAGER">Gerente</MenuItem>
-              <MenuItem value="ADMIN">Administrador</MenuItem>
-              <MenuItem value="OWNER">Proprietário</MenuItem>
-            </Select>
-            <FormHelperText>
-              {formErrors.role || "Selecione uma função para o novo membro"}
-            </FormHelperText>
-          </FormControl>
-        </div>
-      </FormDialog>
+      <InviteMemberDialog
+        open={inviteDialogOpen}
+        onClose={handleCloseInviteDialog}
+        onSubmit={handleInviteMember}
+        isLoading={isInviting}
+      />
     </DashboardLayout>
   );
 };
