@@ -5,7 +5,6 @@ import { PencilIcon, X } from "lucide-react";
 import { Column } from "@/components/common/data-table";
 
 export const columns: Column[] = [
-  { id: "id", label: "ID", minWidth: 80, align: "left" },
   { id: "name", label: "Nome da Organização", minWidth: 180 },
   { id: "slug", label: "Slug", minWidth: 140 },
   { id: "industry", label: "Setor", minWidth: 120 },
