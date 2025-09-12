@@ -1,4 +1,16 @@
 import api from "@/lib/api";
+import axios from "axios";
+
+export interface CreateOrganizationData {
+  name: string;
+  slug: string;
+  domain: string;
+  industry: string;
+  companySize: string;
+  timezone: string;
+  billingEmail: string;
+  plan: "BASIC" | "PRO" | "ENTERPRISE";
+}
 
 export interface OrganizationResponse {
   id: string;
@@ -34,6 +46,21 @@ export interface Users {
 export const organization = {
   async getAll() {
     const response = await api.get<OrganizationResponse[]>("/organizations");
+    return response.data;
+  },
+
+  async createWithToken(data: Partial<CreateOrganizationData>, token: string) {
+    const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+    const response = await axios.post<OrganizationResponse>(
+      `${baseURL}/organizations`,
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     return response.data;
   },
 };
