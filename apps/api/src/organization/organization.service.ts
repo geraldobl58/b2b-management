@@ -29,7 +29,12 @@ export class OrganizationService {
     // Create organization with the user as owner
     const organization = await this.prisma.organization.create({
       data: {
-        ...createOrganizationDto,
+        name: createOrganizationDto.name,
+        slug: createOrganizationDto.slug,
+        domain: createOrganizationDto.domain || '',
+        industry: createOrganizationDto.industry || '',
+        companySize: createOrganizationDto.companySize || '',
+        billingEmail: createOrganizationDto.billingEmail || '',
         timezone: createOrganizationDto.timezone || 'UTC',
         plan: createOrganizationDto.plan || PlanType.BASIC,
         users: {

@@ -103,15 +103,15 @@ enum MetricKind {
 /// Core: Org / Workspace / User
 /// -------------------------
 model Organization {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  domain    String?  // empresa.com
-  industry  String?
-  companySize String? // 1-10, 11-50, etc
-  timezone  String   @default("UTC")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  domain      String // empresa.com
+  industry    String
+  companySize String // 1-10, 11-50, etc
+  timezone    String   @default("UTC")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   workspaces Workspace[]
   users      OrganizationUser[]
@@ -317,7 +317,7 @@ model Lead {
   phone       String?
   company     String?
   jobTitle    String?
-  leadValue   Decimal?   @db.Decimal(18,2)
+  leadValue   Decimal?   @db.Decimal(18, 2)
   status      LeadStatus @default(NEW)
   score       Int? // lead scoring simples
   notes       String?
@@ -443,10 +443,10 @@ model AuditLog {
   id          String   @id @default(cuid())
   workspaceId String
   userId      String
-  action      String   // CREATE, UPDATE, DELETE
-  entity      String   // Campaign, Lead, etc
+  action      String // CREATE, UPDATE, DELETE
+  entity      String // Campaign, Lead, etc
   entityId    String
-  changes     Json?    // before/after values
+  changes     Json? // before/after values
   createdAt   DateTime @default(now())
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
