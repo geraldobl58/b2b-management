@@ -49,6 +49,11 @@ export const organization = {
     return response.data;
   },
 
+  async getById(organizationId: string) {
+    const response = await api.get<OrganizationResponse>(`/organizations/${organizationId}`);
+    return response.data;
+  },
+
   async createWithToken(data: Partial<CreateOrganizationData>, token: string) {
     const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
     const response = await axios.post<OrganizationResponse>(
@@ -71,5 +76,21 @@ export const organization = {
         Authorization: `Bearer ${token}`,
       },
     });
+  },
+
+  // Update para server-side com token explícito
+  async updateWithToken(organizationId: string, data: Partial<CreateOrganizationData>, token: string) {
+    const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+    const response = await axios.patch<OrganizationResponse>(
+      `${baseURL}/organizations/${organizationId}`,
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
   },
 };
