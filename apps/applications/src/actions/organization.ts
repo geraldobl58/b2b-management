@@ -21,6 +21,11 @@ export interface OrganizationResult {
   error?: string;
 }
 
+export interface DeleteOrganizationResult {
+  success: boolean;
+  error?: string;
+}
+
 export async function organizationsAction(
   data: OrganizationFormValues
 ): Promise<OrganizationResult> {
@@ -115,6 +120,72 @@ export async function organizationsAction(
         return {
           success: false,
           error: "Já existe uma organização com este slug ou domínio.",
+        };
+      }
+
+      return {
+        success: false,
+        error: `Erro HTTP ${axiosError.response?.status}: ${axiosError.response?.data?.message || axiosError.message || "Erro desconhecido"}`,
+      };
+    }
+
+    return {
+      success: false,
+      error: `Erro interno: ${error instanceof Error ? error.message : "Erro desconhecido"}`,
+    };
+  }
+}
+
+export async function deleteOrganizationAction(
+  organizationId: string
+): Promise<DeleteOrganizationResult> {
+  try {
+    // Obter o token do usuário logado
+    const cookieStore = await cookies();
+    const token = cookieStore.get("access_token")?.value;
+    
+    if (!token) {
+      return {
+        success: false,
+        error: "Não autorizado. Faça login novamente.",
+      };
+    }
+
+    await organization.deleteWithToken(organizationId, token);
+
+    return {
+      success: true,
+    };
+  } catch (error: unknown) {
+    console.error("Erro na exclusão da organização:", error);
+
+    if (error && typeof error === "object" && "response" in error) {
+      const axiosError = error as { 
+        response?: { 
+          status?: number; 
+          data?: { message?: string };
+        };
+        message?: string;
+      };
+
+      if (axiosError.response?.status === 401) {
+        return {
+          success: false,
+          error: "Não autorizado. Verifique se o token está válido.",
+        };
+      }
+
+      if (axiosError.response?.status === 403) {
+        return {
+          success: false,
+          error: "Permissão insuficiente. Apenas proprietários podem excluir organizações.",
+        };
+      }
+
+      if (axiosError.response?.status === 404) {
+        return {
+          success: false,
+          error: "Organização não encontrada.",
         };
       }
 
