@@ -3,9 +3,9 @@
 import { useState, ReactNode } from "react";
 import { DashboardAppBar } from "./app-bar";
 import { Sidebar } from "./sidebar";
-import { DrawerHeader } from "./styles";
-import { SidebarLayout } from "../layout/sidebar-layout";
+import { SidebarLayout } from "./sidebar-layout";
 import { MenuItem } from "../navigation/types";
+import { DrawerHeader } from "@/components/layout/drawer-header";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -32,16 +32,16 @@ export const AppLayout = ({ children, title, menuItems }: AppLayoutProps) => {
   return (
     <SidebarLayout
       appBar={
-        <DashboardAppBar 
-          open={open} 
-          onDrawerOpen={handleDrawerOpen} 
+        <DashboardAppBar
+          open={open}
+          onDrawerOpen={handleDrawerOpen}
           title={title}
         />
       }
       sidebar={
-        <Sidebar 
-          open={open} 
-          onClose={handleDrawerClose} 
+        <Sidebar
+          open={open}
+          onClose={handleDrawerClose}
           menuItems={menuItems}
         />
       }

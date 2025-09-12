@@ -1,7 +1,7 @@
 "use client";
 
 import { Typography } from "@mui/material";
-import { DashboardLayout } from "@/app/components/dashboard/app-layout";
+import { DashboardLayout } from "@/components/layout/app-layout";
 
 const Dashboard = () => {
   return (
@@ -10,7 +10,8 @@ const Dashboard = () => {
         Dashboard Principal
       </Typography>
       <Typography sx={{ marginBottom: 2 }}>
-        Bem-vindo ao sistema de gerenciamento B2B. Use o menu lateral para navegar entre as diferentes seções.
+        Bem-vindo ao sistema de gerenciamento B2B. Use o menu lateral para
+        navegar entre as diferentes seções.
       </Typography>
     </DashboardLayout>
   );

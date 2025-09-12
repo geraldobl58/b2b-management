@@ -1,7 +1,7 @@
 import { styled, Theme, CSSObject } from "@mui/material/styles";
 import MuiDrawer from "@mui/material/Drawer";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
-import { DRAWER_WIDTH } from "./constants";
+import { DRAWER_WIDTH } from "@/components/layout/constants";
 
 export const openedMixin = (theme: Theme): CSSObject => ({
   width: DRAWER_WIDTH,
@@ -66,19 +66,39 @@ export const StyledDrawer = styled(MuiDrawer, {
   flexShrink: 0,
   whiteSpace: "nowrap",
   boxSizing: "border-box",
+  // Ensure the drawer paper takes full height and uses column flex
+  "& .MuiDrawer-paper": {
+    height: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+  },
   variants: [
     {
       props: ({ open }) => open,
       style: {
         ...openedMixin(theme),
-        "& .MuiDrawer-paper": openedMixin(theme),
+        // keep paper mixin but preserve our layout overrides
+        "& .MuiDrawer-paper": {
+          ...openedMixin(theme),
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+        },
       },
     },
     {
       props: ({ open }) => !open,
       style: {
         ...closedMixin(theme),
-        "& .MuiDrawer-paper": closedMixin(theme),
+        "& .MuiDrawer-paper": {
+          ...closedMixin(theme),
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+        },
       },
     },
   ],

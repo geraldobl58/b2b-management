@@ -5,7 +5,7 @@ import { InputAdornment, Paper, TextField } from "@mui/material";
 
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
-import { DashboardLayout } from "@/app/components/dashboard/app-layout";
+import { DashboardLayout } from "@/components/layout/app-layout";
 
 const columns: GridColDef[] = [
   { field: "id", headerName: "ID", width: 70 },

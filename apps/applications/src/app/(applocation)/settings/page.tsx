@@ -1,7 +1,7 @@
 "use client";
 
 import { Typography } from "@mui/material";
-import { DashboardLayout } from "@/app/components/dashboard/app-layout";
+import { DashboardLayout } from "@/components/layout/app-layout";
 
 const Settings = () => {
   return (
@@ -10,7 +10,7 @@ const Settings = () => {
         Configurações do Sistema
       </Typography>
       <Typography sx={{ marginBottom: 2 }}>
-        Esta é a página de configurações. Aqui você pode ajustar as preferências 
+        Esta é a página de configurações. Aqui você pode ajustar as preferências
         do sistema, gerenciar usuários e personalizar a aplicação.
       </Typography>
     </DashboardLayout>

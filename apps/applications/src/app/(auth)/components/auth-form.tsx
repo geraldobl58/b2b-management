@@ -5,10 +5,19 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Logo } from "@/app/components/logo";
-import { Box, Button, Paper, TextField, Typography } from "@mui/material";
 import { FiEyeOff } from "react-icons/fi";
 import { BsEye } from "react-icons/bs";
+
+import { Logo } from "@/components/logo";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Paper,
+  TextField,
+  Typography,
+} from "@mui/material";
+
 import { formAuthSchema, FormAuthValues } from "@/schemas/auth";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -74,9 +83,15 @@ export const AuthForm = () => {
                       type="button"
                       onClick={togglePasswordVisibility}
                       className="min-w-0 p-1 text-gray-500 hover:text-gray-700"
-                      aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                      aria-label={
+                        showPassword ? "Ocultar senha" : "Mostrar senha"
+                      }
                     >
-                      {showPassword ? <FiEyeOff size={18} /> : <BsEye size={18} />}
+                      {showPassword ? (
+                        <FiEyeOff size={18} />
+                      ) : (
+                        <BsEye size={18} />
+                      )}
                     </Button>
                   ),
                 },
@@ -93,10 +108,13 @@ export const AuthForm = () => {
           )}
 
           <Box>
-            <Button 
-              type="submit" 
-              fullWidth 
+            <Button
+              type="submit"
+              fullWidth
               variant="contained"
+              loading={isLoading}
+              loadingPosition="start"
+              startIcon={<CircularProgress size={10} />}
               disabled={isLoading}
             >
               {isLoading ? "Entrando..." : "Entrar"}

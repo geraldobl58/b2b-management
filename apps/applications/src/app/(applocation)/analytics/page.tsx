@@ -1,7 +1,7 @@
 "use client";
 
 import { Typography } from "@mui/material";
-import { DashboardLayout } from "@/app/components/dashboard/app-layout";
+import { DashboardLayout } from "@/components/layout/app-layout";
 
 const Analytics = () => {
   return (
@@ -10,7 +10,7 @@ const Analytics = () => {
         Análises e Relatórios
       </Typography>
       <Typography sx={{ marginBottom: 2 }}>
-        Esta é a página de análises. Aqui você pode visualizar métricas e 
+        Esta é a página de análises. Aqui você pode visualizar métricas e
         relatórios detalhados sobre o desempenho do seu negócio.
       </Typography>
     </DashboardLayout>
