@@ -40,16 +40,18 @@ export const OrganizationForm = () => {
   });
 
   const { isLoading, createOrganization, createOrganizationError } =
-    useOrganization(() => {
-      // Limpa os campos quando a organização é criada com sucesso
-      reset({
-        name: "",
-        slug: "",
-        domain: "",
-        industry: "",
-        companySize: "",
-        timezone: "",
-      });
+    useOrganization({
+      onCreateSuccess: () => {
+        // Limpa os campos quando a organização é criada com sucesso
+        reset({
+          name: "",
+          slug: "",
+          domain: "",
+          industry: "",
+          companySize: "",
+          timezone: "",
+        });
+      }
     });
   const mounted = useMounted();
 
