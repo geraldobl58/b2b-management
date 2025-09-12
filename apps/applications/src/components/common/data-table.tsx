@@ -19,6 +19,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { ReactNode, useState, useMemo } from "react";
+import { useMounted } from "@/hooks/use-mounted";
 
 export interface Column<T = any> {
   id: keyof T;
@@ -125,6 +126,7 @@ export const DataTable = <T extends Record<string, any>>({
 }: DataTableProps<T>) => {
   const [internalPage, setInternalPage] = useState(page);
   const [internalRowsPerPage, setInternalRowsPerPage] = useState(rowsPerPage);
+  const mounted = useMounted();
 
   // Pagination handlers
   const handlePageChange = (event: unknown, newPage: number) => {
@@ -329,7 +331,21 @@ export const DataTable = <T extends Record<string, any>>({
             </TableHead>
 
             <TableBody>
-              {loading ? (
+              {!mounted ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={displayColumns.length}
+                    align="center"
+                    sx={{ py: 4 }}
+                  >
+                    <Box sx={{ display: "flex", justifyContent: "center" }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Carregando...
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ) : loading ? (
                 <TableRow>
                   <TableCell
                     colSpan={displayColumns.length}
@@ -408,7 +424,7 @@ export const DataTable = <T extends Record<string, any>>({
         </TableContainer>
 
         {/* Pagination */}
-        {showPagination && !loading && (
+        {mounted && showPagination && !loading && (
           <TablePagination
             rowsPerPageOptions={rowsPerPageOptions}
             component="div"
