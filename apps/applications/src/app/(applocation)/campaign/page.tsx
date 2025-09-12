@@ -1,7 +1,7 @@
 "use client";
 
 import { SearchIcon } from "lucide-react";
-import { InputAdornment, Paper, TextField } from "@mui/material";
+import { InputAdornment, TextField } from "@mui/material";
 
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
