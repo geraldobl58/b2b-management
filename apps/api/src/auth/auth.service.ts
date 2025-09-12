@@ -49,6 +49,9 @@ export class AuthService {
 
     if (!user) throw new UnauthorizedException();
 
+    // Check if user has a password (OAuth users might not have one)
+    if (!user.password) throw new UnauthorizedException('Invalid login method');
+
     const response = await bcrypt.compare(password, user.password);
 
     if (!response) throw new UnauthorizedException();
