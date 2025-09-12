@@ -1,12 +1,24 @@
 import { IconButton, Tooltip } from "@mui/material";
 
-import { PencilIcon, Trash2 } from "lucide-react";
+import { EyeIcon, PencilIcon, Trash2 } from "lucide-react";
 
 import { Column } from "@/components/common/data-table";
 
+interface OrganizationData {
+  id: string;
+  name: string;
+  slug: string;
+  domain: string;
+  industry: string;
+  companySize: string;
+  timezone: string;
+  currentUserRole: "OWNER" | "ADMIN" | "MANAGER" | "ANALYST" | "VIEWER";
+}
+
 interface ColumnsOptions {
-  onEdit?: (organizationId: string, organizationName: string) => void;
+  onEdit?: (organization: OrganizationData) => void;
   onDelete?: (organizationId: string, organizationName: string) => void;
+  onView?: (organizationId: string) => void;
 }
 
 export const createColumns = (options: ColumnsOptions = {}): Column[] => [
@@ -39,17 +51,19 @@ export const createColumns = (options: ColumnsOptions = {}): Column[] => [
     sortable: false,
     renderCell: (_, row) => (
       <div className="flex gap-1">
-        {options.onEdit && (
-          <Tooltip title="Editar organização" arrow>
-            <IconButton
-              size="small"
-              color="primary"
-              onClick={() => options.onEdit?.(row.id, row.name)}
-            >
-              <PencilIcon size={16} />
-            </IconButton>
-          </Tooltip>
-        )}
+        {options.onEdit &&
+          (row.currentUserRole === "OWNER" ||
+            row.currentUserRole === "ADMIN") && (
+            <Tooltip title="Editar organização" arrow>
+              <IconButton
+                size="small"
+                color="primary"
+                onClick={() => options.onEdit?.(row)}
+              >
+                <PencilIcon size={16} />
+              </IconButton>
+            </Tooltip>
+          )}
 
         {options.onDelete && row.currentUserRole === "OWNER" && (
           <Tooltip title="Excluir organização" arrow>
@@ -59,6 +73,18 @@ export const createColumns = (options: ColumnsOptions = {}): Column[] => [
               onClick={() => options.onDelete?.(row.id, row.name)}
             >
               <Trash2 size={16} />
+            </IconButton>
+          </Tooltip>
+        )}
+
+        {options.onView && (
+          <Tooltip title="Ver detalhes da organização" arrow>
+            <IconButton 
+              size="small" 
+              color="default"
+              onClick={() => options.onView?.(row.id)}
+            >
+              <EyeIcon size={16} />
             </IconButton>
           </Tooltip>
         )}
