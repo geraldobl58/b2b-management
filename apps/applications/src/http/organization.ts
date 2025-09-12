@@ -63,4 +63,13 @@ export const organization = {
     );
     return response.data;
   },
+
+  // Delete para server-side com token explícito
+  async deleteWithToken(organizationId: string, token: string) {
+    await api.delete(`/organizations/${organizationId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  },
 };
