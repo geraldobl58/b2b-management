@@ -54,6 +54,25 @@ enum AssetType {
   OTHER
 }
 
+enum PlanType {
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum SocialPostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  FAILED
+}
+
+enum ReportFormat {
+  PDF
+  XLSX
+  HTML
+}
+
 enum MetricKind {
   // Principais KPIs
   IMPRESSIONS
@@ -87,15 +106,19 @@ model Organization {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
+  domain    String?  // empresa.com
+  industry  String?
+  companySize String? // 1-10, 11-50, etc
+  timezone  String   @default("UTC")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   workspaces Workspace[]
   users      OrganizationUser[]
 
-  // Billing básico
+  // Billing
   billingEmail String?
-  plan         String? // BASIC | PRO | ENTERPRISE (livre)
+  plan         PlanType @default(BASIC)
 }
 
 model Workspace {
@@ -118,23 +141,26 @@ model Workspace {
   reports      Report[]
   automations  Automation[]
   webhooks     WebhookEndpoint[]
-  MetricDaily  MetricDaily[]
-  Tag          Tag[]
-  SocialPost   SocialPost[]
+  metricDaily  MetricDaily[]
+  tag          Tag[]
+  socialPost   SocialPost[]
+  auditLogs    AuditLog[]
 }
 
 model User {
-  id         String   @id @default(cuid())
-  email      String   @unique
-  name       String
-  password   String
-  pictureUrl String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String  @id @default(cuid())
+  email     String  @unique
+  name      String
+  password  String? // Optional for OAuth/SSO
+  avatarUrl String?
 
   organizations OrganizationUser[]
   workspaces    WorkspaceUser[]
-  Asset         Asset[]
+  asset         Asset[]
+  auditLogs     AuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model OrganizationUser {
@@ -188,6 +214,10 @@ model Campaign {
   metricsDaily MetricDaily[]
   tags         CampaignTag[]
   Lead         Lead[]
+
+  @@index([status, workspaceId])
+  @@index([channel])
+  @@index([workspaceId, createdAt])
 }
 
 model AdGroup {
@@ -232,6 +262,7 @@ model MetricDaily {
   adGroup   AdGroup?  @relation(fields: [adGroupId], references: [id], onDelete: Cascade)
   ad        Ad?       @relation(fields: [adId], references: [id], onDelete: Cascade)
 
+  @@unique([workspaceId, campaignId, adGroupId, adId, date, kind])
   @@index([workspaceId, date])
   @@index([campaignId, date])
   @@index([kind, date])
@@ -285,10 +316,18 @@ model Lead {
   email       String?
   phone       String?
   company     String?
+  jobTitle    String?
+  leadValue   Decimal?   @db.Decimal(18,2)
   status      LeadStatus @default(NEW)
   score       Int? // lead scoring simples
   notes       String?
   custom      Json?
+  // UTM tracking
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmContent  String?
+  utmTerm     String?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
@@ -299,6 +338,8 @@ model Lead {
   @@index([workspaceId, status])
   @@index([campaignId])
   @@index([email])
+  @@index([createdAt])
+  @@index([company])
 }
 
 /// -------------------------
@@ -319,14 +360,15 @@ model Asset {
 }
 
 model SocialPost {
-  id          String    @id @default(cuid())
+  id          String           @id @default(cuid())
   workspaceId String
   channel     Channel
   content     String
   scheduledAt DateTime?
   publishedAt DateTime?
-  status      String? // scheduled|published|failed
-  createdAt   DateTime  @default(now())
+  status      SocialPostStatus @default(DRAFT)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
@@ -335,16 +377,17 @@ model SocialPost {
 /// Relatórios
 /// -------------------------
 model Report {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   workspaceId String
   name        String
   periodStart DateTime
   periodEnd   DateTime
-  format      String // PDF | XLSX | HTML
+  format      ReportFormat @default(PDF)
   deliveredTo String[] // e-mails
   config      Json? // definição de widgets/KPIs
   fileUrl     String? // arquivo gerado
-  createdAt   DateTime @default(now())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
@@ -391,4 +434,25 @@ model WebhookEndpoint {
   createdAt   DateTime @default(now())
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+/// -------------------------
+/// Auditoria
+/// -------------------------
+model AuditLog {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String
+  action      String   // CREATE, UPDATE, DELETE
+  entity      String   // Campaign, Lead, etc
+  entityId    String
+  changes     Json?    // before/after values
+  createdAt   DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, createdAt])
+  @@index([entity, entityId])
+  @@index([userId])
 }
