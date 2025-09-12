@@ -2,13 +2,18 @@
 
 import { useRouter } from "next/navigation";
 
-import { organizationsAction } from "@/actions/organization";
+import { organizationsAction, deleteOrganizationAction } from "@/actions/organization";
 import { organization } from "@/http/organization";
 import { cookieUtils } from "@/lib/cookies";
 import { OrganizationFormValues } from "@/schemas/organization";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export const useOrganization = (onSuccess?: () => void) => {
+interface UseOrganizationOptions {
+  onCreateSuccess?: () => void;
+  onDeleteSuccess?: () => void;
+}
+
+export const useOrganization = (options?: UseOrganizationOptions) => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -48,8 +53,24 @@ export const useOrganization = (onSuccess?: () => void) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organizations"] });
-      onSuccess?.(); // Chama callback personalizado se fornecido
+      options?.onCreateSuccess?.(); // Chama callback personalizado se fornecido
       router.push("/organizations");
+    },
+  });
+
+  const deleteOrganizationMutation = useMutation({
+    mutationFn: async (organizationId: string) => {
+      const result = await deleteOrganizationAction(organizationId);
+
+      if (!result.success) {
+        throw new Error(result.error || "Erro na exclusão da organização");
+      }
+
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
+      options?.onDeleteSuccess?.(); // Chama callback personalizado se fornecido
     },
   });
 
@@ -58,5 +79,9 @@ export const useOrganization = (onSuccess?: () => void) => {
     isLoading: isLoadingOrganization || organizationMutation.isPending,
     createOrganization: organizationMutation.mutate,
     createOrganizationError: organizationMutation.error?.message,
+    // Delete functionality
+    deleteOrganization: deleteOrganizationMutation.mutate,
+    isDeleting: deleteOrganizationMutation.isPending,
+    deleteOrganizationError: deleteOrganizationMutation.error?.message,
   };
 };
