@@ -40,9 +40,9 @@ const theme = createTheme({
       dark: "#0891b2", // cyan-600
     },
     success: {
-      main: "#10b981", // emerald-500
-      light: "#34d399", // emerald-400
-      dark: "#059669", // emerald-600
+      main: "#4caf50", // emerald-500
+      light: "#2e7d32", // emerald-400
+      dark: "#1b5e20", // emerald-600
     },
     grey: {
       50: "#f9fafb", // gray-50
