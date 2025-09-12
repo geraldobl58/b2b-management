@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { organizationsAction, deleteOrganizationAction } from "@/actions/organization";
+import { organizationsAction, deleteOrganizationAction, updateOrganizationAction } from "@/actions/organization";
 import { organization } from "@/http/organization";
 import { cookieUtils } from "@/lib/cookies";
 import { OrganizationFormValues } from "@/schemas/organization";
@@ -10,6 +10,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface UseOrganizationOptions {
   onCreateSuccess?: () => void;
+  onUpdateSuccess?: () => void;
   onDeleteSuccess?: () => void;
 }
 
@@ -74,6 +75,22 @@ export const useOrganization = (options?: UseOrganizationOptions) => {
     },
   });
 
+  const updateOrganizationMutation = useMutation({
+    mutationFn: async ({ organizationId, data }: { organizationId: string; data: OrganizationFormValues }) => {
+      const result = await updateOrganizationAction(organizationId, data);
+
+      if (!result.success) {
+        throw new Error(result.error || "Erro na atualização da organização");
+      }
+
+      return result.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
+      options?.onUpdateSuccess?.(); // Chama callback personalizado se fornecido
+    },
+  });
+
   return {
     organizations,
     isLoading: isLoadingOrganization || organizationMutation.isPending,
@@ -83,5 +100,9 @@ export const useOrganization = (options?: UseOrganizationOptions) => {
     deleteOrganization: deleteOrganizationMutation.mutate,
     isDeleting: deleteOrganizationMutation.isPending,
     deleteOrganizationError: deleteOrganizationMutation.error?.message,
+    // Update functionality
+    updateOrganization: updateOrganizationMutation.mutate,
+    isUpdating: updateOrganizationMutation.isPending,
+    updateOrganizationError: updateOrganizationMutation.error?.message,
   };
 };
