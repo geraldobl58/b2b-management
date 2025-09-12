@@ -146,6 +146,31 @@ export const sidebarMenu: MenuItem[] = [
     ],
   },
   {
+    label: "Organização",
+    icon: "Building",
+    roles: ALL,
+    items: [
+      {
+        label: "Criar Organização",
+        path: "/organizations",
+        icon: "PlusCircle",
+        roles: ALL,
+      },
+      {
+        label: "Membros",
+        path: "/organizations/members",
+        icon: "Users",
+        roles: MANAGER_UP,
+      },
+      {
+        label: "Configurações da Org",
+        path: "/organizations/settings",
+        icon: "Settings",
+        roles: ADMIN_UP,
+      },
+    ],
+  },
+  {
     label: "Configurações",
     icon: "Settings",
     roles: ADMIN_UP,
