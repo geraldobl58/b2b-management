@@ -2,7 +2,7 @@
 
 import { DataTable } from "@/components/common/data-table";
 
-import { useOrganization } from "@/hooks/organization";
+import { useOrganization } from "@/hooks/use-organization";
 import { columns } from "./columns";
 
 export const ListOrganization = () => {
