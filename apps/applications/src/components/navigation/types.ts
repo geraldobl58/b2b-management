@@ -1,5 +1,3 @@
-import { ReactNode } from "react";
-
 export type Role = "OWNER" | "ADMIN" | "MANAGER" | "ANALYST" | "VIEWER";
 
 export interface MenuItem {
@@ -10,4 +8,3 @@ export interface MenuItem {
   items?: MenuItem[];
   featureFlag?: string;
 }
-
