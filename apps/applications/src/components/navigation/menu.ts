@@ -24,50 +24,29 @@ export const sidebarMenu: MenuItem[] = [
       },
       {
         label: "Criar campanha",
-        path: "/app/campaigns/new",
+        path: "/campaigns/new",
         icon: "PlusCircle",
         roles: MANAGER_UP,
       },
       {
         label: "Grupos de anúncios",
-        path: "/app/ad-groups",
+        path: "/ad-groups",
         icon: "Layers",
         roles: MANAGER_UP,
       },
       {
         label: "Criativos (Ads)",
-        path: "/app/ads",
+        path: "/ads",
         icon: "Image",
         roles: MANAGER_UP,
       },
       {
         label: "Métricas",
-        path: "/app/metrics",
+        path: "/metrics",
         icon: "BarChart3",
         roles: ALL,
       },
-      { label: "Tags", path: "/app/tags", icon: "Tag", roles: MANAGER_UP },
-    ],
-  },
-  {
-    label: "Leads & CRM",
-    icon: "Users",
-    roles: MANAGER_UP,
-    items: [
-      { label: "Leads", path: "/app/leads", icon: "Users", roles: MANAGER_UP },
-      {
-        label: "Fontes",
-        path: "/app/lead-sources",
-        icon: "Link2",
-        roles: MANAGER_UP,
-      },
-      {
-        label: "Pipeline",
-        path: "/app/pipeline",
-        icon: "KanbanSquare",
-        roles: MANAGER_UP,
-        featureFlag: "pipeline",
-      },
+      { label: "Tags", path: "/tags", icon: "Tag", roles: MANAGER_UP },
     ],
   },
   {
@@ -77,19 +56,19 @@ export const sidebarMenu: MenuItem[] = [
     items: [
       {
         label: "Assets",
-        path: "/app/assets",
+        path: "/assets",
         icon: "FolderOpen",
         roles: MANAGER_UP,
       },
       {
         label: "Posts Sociais",
-        path: "/app/social-posts",
+        path: "/social-posts",
         icon: "Share2",
         roles: MANAGER_UP,
       },
       {
         label: "Agendamentos",
-        path: "/app/social-schedule",
+        path: "/social-schedule",
         icon: "CalendarDays",
         roles: MANAGER_UP,
       },
@@ -102,19 +81,19 @@ export const sidebarMenu: MenuItem[] = [
     items: [
       {
         label: "Dashboards",
-        path: "/app/reports/dashboards",
+        path: "/reports/dashboards",
         icon: "PieChart",
         roles: ALL,
       },
       {
         label: "Relatórios",
-        path: "/app/reports",
+        path: "/reports",
         icon: "FileText",
         roles: ALL,
       },
       {
         label: "Novo relatório",
-        path: "/app/reports/new",
+        path: "/reports/new",
         icon: "Plus",
         roles: MANAGER_UP,
       },
@@ -127,45 +106,20 @@ export const sidebarMenu: MenuItem[] = [
     items: [
       {
         label: "Integrações",
-        path: "/app/integrations",
+        path: "/integrations",
         icon: "Plug",
         roles: ADMIN_UP,
       },
       {
-        label: "Automations",
-        path: "/app/automations",
+        label: "Automações",
+        path: "/automations",
         icon: "Bot",
         roles: MANAGER_UP,
       },
       {
         label: "Webhooks",
-        path: "/app/webhooks",
+        path: "/webhooks",
         icon: "Webhook",
-        roles: ADMIN_UP,
-      },
-    ],
-  },
-  {
-    label: "Organização",
-    icon: "Building",
-    roles: ALL,
-    items: [
-      {
-        label: "Criar Organização",
-        path: "/organizations",
-        icon: "PlusCircle",
-        roles: ALL,
-      },
-      {
-        label: "Membros",
-        path: "/organizations/members",
-        icon: "Users",
-        roles: MANAGER_UP,
-      },
-      {
-        label: "Configurações da Org",
-        path: "/organizations/settings",
-        icon: "Settings",
         roles: ADMIN_UP,
       },
     ],
@@ -176,26 +130,20 @@ export const sidebarMenu: MenuItem[] = [
     roles: ADMIN_UP,
     items: [
       {
-        label: "Workspace",
-        path: "/app/settings/workspace",
-        icon: "Building2",
-        roles: ADMIN_UP,
-      },
-      {
         label: "Time & Permissões",
-        path: "/app/settings/team",
+        path: "/settings/team",
         icon: "Shield",
         roles: ADMIN_UP,
       },
       {
         label: "Planos & Cobrança",
-        path: "/app/settings/billing",
+        path: "/settings/billing",
         icon: "CreditCard",
         roles: ADMIN_UP,
       },
       {
         label: "Preferências",
-        path: "/app/settings/preferences",
+        path: "/settings/preferences",
         icon: "Sliders",
         roles: ALL,
       },
