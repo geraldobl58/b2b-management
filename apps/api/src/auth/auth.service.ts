@@ -36,6 +36,7 @@ export class AuthService {
         id: true,
         name: true,
         email: true,
+        role: true,
       },
     });
 
@@ -49,6 +50,9 @@ export class AuthService {
 
     if (!user) throw new UnauthorizedException();
 
+    // Check if user is active
+    if (!user.isActive) throw new UnauthorizedException('Account is inactive');
+
     // Check if user has a password (OAuth users might not have one)
     if (!user.password) throw new UnauthorizedException('Invalid login method');
 
@@ -59,6 +63,7 @@ export class AuthService {
     const payload = {
       sub: user.id,
       email: user.email,
+      role: user.role,
     };
 
     const access_token = await this.jwt.signAsync(payload);

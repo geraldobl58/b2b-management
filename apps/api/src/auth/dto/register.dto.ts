@@ -4,16 +4,19 @@ import {
   MinLength,
   IsStrongPassword,
   MaxLength,
+  IsEnum,
+  IsOptional,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Role } from '@prisma/client';
 
 export class RegisterDto {
   @IsString()
-  @ApiProperty({ example: 'John Doe' })
+  @ApiProperty({ example: 'Jane Doe' })
   name: string;
 
   @IsEmail()
-  @ApiProperty({ example: 'johndoe@example.com' })
+  @ApiProperty({ example: 'janedoe@example.com' })
   email: string;
 
   @IsString()
@@ -34,4 +37,13 @@ export class RegisterDto {
     maxLength: 20,
   })
   password: string;
+
+  @IsOptional()
+  @IsEnum(Role)
+  @ApiPropertyOptional({
+    enum: Role,
+    example: 'SALES',
+    description: 'User role',
+  })
+  role?: Role;
 }

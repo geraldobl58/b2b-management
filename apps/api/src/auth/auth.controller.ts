@@ -43,6 +43,7 @@ export class AuthController {
         id: 'uuid',
         name: 'John Doe',
         email: 'john@example.com',
+        role: 'SALES',
       },
     },
   })
@@ -106,6 +107,7 @@ export class AuthController {
         id: 'uuid',
         name: 'John Doe',
         email: 'john@example.com',
+        role: 'SALES',
       },
     },
   })

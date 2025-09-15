@@ -8,13 +8,344 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/**
+ * ===========================
+ * ENUMS
+ * ===========================
+ */
+enum CompanySize {
+  MICRO
+  SMALL
+  MEDIUM
+  LARGE
+  ENTERPRISE
+}
+
+enum InvestmentStage {
+  NONE
+  SEED
+  SERIES_A
+  SERIES_B
+  SERIES_C_PLUS
+}
+
+enum Seniority {
+  INTERN
+  JUNIOR
+  MID
+  SENIOR
+  LEAD
+  DIRECTOR
+  VP
+  C_LEVEL
+}
+
+enum LeadStatus {
+  NEW
+  ENRICHING
+  QUALIFIED
+  CONTACTED
+  NEGOTIATION
+  WON
+  LOST
+}
+
+enum LeadSource {
+  MANUAL
+  IMPORT
+  SCRAPER
+  JOB_BOARD
+  NEWS
+  FUNDING
+  REFERRAL
+  OTHER
+}
+
+enum SignalType {
+  JOB_POST
+  NEWS
+  FUNDING
+  TECH_STACK
+  HIRING_PAGE_UPDATE
+  WEBSITE_UPDATE
+  OTHER
+}
+
+enum AlertStatus {
+  PENDING
+  SENT
+  READ
+  DISMISSED
+}
+
+enum AlertChannel {
+  IN_APP
+  EMAIL
+  SLACK
+  WEBHOOK
+}
+
+enum RunStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  PARTIAL
+}
+
+enum IntegrationType {
+  HUBSPOT
+  PIPEDRIVE
+  RDSTATION
+  SLACK
+  GOOGLE_SHEETS
+  WEBHOOK
+  CUSTOM
+}
+
+enum ScrapeStatus {
+  SCHEDULED
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+enum ScrapeType {
+  COMPANY_PROFILE
+  JOB_BOARD
+  NEWS_FEED
+  FUNDING_FEED
+  HIRING_PAGE
+  CUSTOM
+}
+
+enum Role {
+  ADMIN
+  SALES
+  ANALYST
+}
+
+/**
+ * ===========================
+ * MODELOS PRINCIPAIS
+ * ===========================
+ */
+
 model User {
-  id        String  @id @default(cuid())
-  email     String  @unique
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      Role     @default(SALES)
+  isActive  Boolean  @default(true)
+  // Relacionamentos
+  leads     Lead[]   @relation("LeadOwner")
+  alerts    Alert[]  @relation("AlertTarget")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Company {
+  id              String           @id @default(uuid())
+  cnpj            String?          @unique // opcional/brasil
+  name            String
+  tradeName       String?
+  domain          String?          @unique
+  website         String?
+  linkedin        String?
+  industry        String?
+  size            CompanySize?
+  employeesMin    Int?
+  employeesMax    Int?
+  country         String?          @default("BR")
+  state           String?
+  city            String?
+  investmentStage InvestmentStage? @default(NONE)
+  isHiring        Boolean          @default(false)
+  score           Int              @default(0) // lead scoring dinâmico
+  lastSeenAt      DateTime?
+  lastJobPostAt   DateTime?
+
+  // Relacionamentos
+  contacts       Contact[]
+  leads          Lead[]
+  signals        Signal[]
+  jobPostings    JobPosting[]
+  enrichmentRuns EnrichmentRun[]
+
+  // Controle
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([name])
+  @@index([industry])
+  @@index([isHiring, lastJobPostAt])
+  @@index([score])
+}
+
+model Contact {
+  id              String     @id @default(uuid())
+  companyId       String
+  company         Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name            String
+  title           String?
+  seniority       Seniority?
+  email           String?    @unique
+  phone           String?
+  linkedin        String?
+  isDecisionMaker Boolean    @default(false)
+
+  enrichmentRuns EnrichmentRun[]
+  leads          Lead[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([companyId])
+  @@index([name])
+  @@index([isDecisionMaker])
+}
+
+model Lead {
+  id        String  @id @default(uuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  ownerId String?
+  owner   User?   @relation("LeadOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
+  status   LeadStatus @default(NEW)
+  source   LeadSource @default(OTHER)
+  score    Int        @default(0) // cálculo: sinais, vagas, funding, fit-setor, etc.
+  value    Decimal?   @db.Decimal(12, 2)
+  currency String?    @default("BRL")
+  notes    String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  closedAt  DateTime?
+
+  @@index([companyId, status])
+  @@index([ownerId, status])
+  @@index([source])
+  @@index([score])
+}
+
+model Signal {
+  id        String  @id @default(uuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  type       SignalType
+  title      String
+  url        String?
+  payload    Json? // corpo bruto (ex.: vaga coletada, notícia)
+  confidence Int        @default(80) // 0-100
+  occurredAt DateTime // quando o evento aconteceu (não só quando coletado)
+  capturedAt DateTime   @default(now())
+
+  alerts Alert[]
+
+  createdAt DateTime @default(now())
+
+  @@index([companyId, type, occurredAt])
+}
+
+model Alert {
+  id       String @id @default(uuid())
+  signalId String
+  signal   Signal @relation(fields: [signalId], references: [id], onDelete: Cascade)
+
+  targetUserId String
+  targetUser   User   @relation("AlertTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  channel AlertChannel @default(IN_APP)
+  status  AlertStatus  @default(PENDING)
+  message String?
+  sentAt  DateTime?
+  readAt  DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([targetUserId, status])
+  @@index([signalId])
+}
+
+model JobPosting {
+  id        String  @id @default(uuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  title      String
+  department String?
+  seniority  Seniority?
+  location   String?
+  remote     Boolean    @default(false)
+  source     String? // ex.: "Gupy", "Greenhouse", "LinkedIn"
+  sourceUrl  String?
+  capturedAt DateTime   @default(now())
+
+  createdAt DateTime @default(now())
+
+  @@index([companyId, capturedAt])
+}
+
+model EnrichmentRun {
+  id       String    @id @default(uuid())
+  status   RunStatus @default(QUEUED)
+  provider String // ex.: "OpenAI", "Clearbit", "CustomNLP"
+  cost     Decimal?  @db.Decimal(10, 4)
+
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  input      Json?
+  output     Json?
+  startedAt  DateTime?
+  finishedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([companyId])
+  @@index([contactId])
+  @@index([status])
+  @@index([provider])
+}
+
+model Integration {
+  id        String          @id @default(uuid())
+  type      IntegrationType
   name      String
-  password  String // Optional for OAuth/SSO
-  avatarUrl String?
+  active    Boolean         @default(true)
+  config    Json
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@unique([type, name])
+  @@index([type, active])
+}
+
+model ScrapeTask {
+  id        String       @id @default(uuid())
+  type      ScrapeType
+  targetUrl String?
+  query     String? // termo de busca / feed
+  status    ScrapeStatus @default(SCHEDULED)
+  lastRunAt DateTime?
+  schedule  String? // cron expression se usar scheduler
+  meta      Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([type, status])
+  @@index([lastRunAt])
 }
