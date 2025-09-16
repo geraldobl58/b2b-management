@@ -1,4 +1,3 @@
-// schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,7 +9,63 @@ datasource db {
 
 enum Role {
   ADMIN
-  MODERATOR
+  BUSINESS
+  TEAM_MEMBER
+  VIEWER
+}
+
+enum PhoneType {
+  MOBILE
+  LANDLINE
+}
+
+enum TaxpayerType {
+  INSENTO
+  MEI
+  SIMPLES_NACIONAL
+  LUCRO_PRESUMIDO
+  LUCRO_REAL
+}
+
+enum CampaignType {
+  INCENTIVO
+  TRADE
+  MKT
+  ONLINE
+  OFFLINE
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_SLIP
+  PIX
+  CASH
+}
+
+enum DeliveryType {
+  DIGITAL
+  PHYSICAL
+}
+
+enum ContactRole {
+  CAMPAIGN_MANAGER // Gestor da campanha
+  BILLING_CONTACT // Contato de cobrança
+  VIA_VAREJO_RESP // Responsável Via Varejo (ex. do layout)
+  OTHER
+}
+
+enum BranchType {
+  MATRIZ
+  FILIAL
+}
+
+enum CardBrand {
+  VISA
+  MASTERCARD
+  AMEX
+  ELO
+  HIPERCARD
 }
 
 model User {
@@ -18,8 +73,215 @@ model User {
   email     String   @unique
   name      String
   password  String
-  role      Role     @default(MODERATOR)
+  role      Role     @default(VIEWER)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Auditoria de criação
+  createdClients  Client[]   @relation("UserCreatedClient")
+  createdCampaigns Campaign[] @relation("UserCreatedCampaign")
+  createdContracts Contract[] @relation("UserCreatedContract")
+}
+
+model Client {
+  id                String       @id @default(uuid())
+  cnpj              String       @unique
+  companyName       String
+  fantasyName       String
+  taxpayerType      TaxpayerType
+  stateRegistration String?
+  typeRelationship  String?
+
+  phones    ClientPhone[]
+  addresses Address[]
+
+  contracts Contract[]
+  campaigns Campaign[]
+
+  // Auditoria
+  createdById String?
+  createdBy   User?   @relation("UserCreatedClient", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cnpj])
+  @@index([createdById])
+}
+
+model Address {
+  id       String  @id @default(uuid())
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  label      String
+  zipcode    String
+  street     String
+  number     String
+  complement String?
+  district   String?
+  city       String
+  state      String
+  isDefault  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([clientId, isDefault])
+}
+
+model ClientPhone {
+  id        String    @id @default(uuid())
+  clientId  String
+  client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  type      PhoneType
+  number    String
+  createdAt DateTime  @default(now())
+
+  @@index([clientId])
+}
+
+model Contract {
+  id        String    @id @default(uuid())
+  code      String    @unique
+  brand     String?
+  partner   String?
+  startDate DateTime?
+  endDate   DateTime?
+
+  // Dados de cobrança (opcionais)
+  billingCardLast4 String?
+  billingCardBrand CardBrand?
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  campaigns Campaign[]
+
+  // Auditoria
+  createdById String?
+  createdBy   User?   @relation("UserCreatedContract", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([createdById])
+}
+
+model Campaign {
+  id           String       @id @default(uuid())
+  name         String
+  startDate    DateTime
+  endDate      DateTime
+  city         String?
+  type         CampaignType
+  branchType   BranchType   @default(MATRIZ)
+  observations String?
+
+  // vínculos
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  contractId String?
+  contract   Contract? @relation(fields: [contractId], references: [id], onDelete: SetNull)
+
+  // contatos
+  contacts CampaignContact[]
+
+  // blocos 1:1
+  business BusinessModel?
+  config   CampaignConfig?
+
+  // Auditoria
+  createdById String?
+  createdBy   User?   @relation("UserCreatedCampaign", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([contractId])
+  @@index([createdById])
+}
+
+model Person {
+  id        String   @id @default(uuid())
+  name      String
+  email     String?
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  CampaignContact CampaignContact[]
+}
+
+model CampaignContact {
+  // pivot entre Campaign e Person, com papel
+  id         String      @id @default(uuid())
+  campaignId String
+  campaign   Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  personId   String
+  person     Person      @relation(fields: [personId], references: [id], onDelete: Cascade)
+  role       ContactRole
+  createdAt  DateTime    @default(now())
+
+  @@unique([campaignId, personId, role])
+  @@index([campaignId])
+  @@index([personId])
+}
+
+model BusinessModel {
+  id String @id @default(uuid())
+
+  // Pagamentos
+  paymentMethod PaymentMethod
+  upfront       Boolean       @default(false)
+  daysToInvoice Int           @default(0)
+  notes         String?
+
+  // Faturamento / estimativas
+  billingModel    String?
+  estimateMonthly Decimal? @db.Decimal(14, 2)
+  estimateAnnual  Decimal? @db.Decimal(14, 2)
+  autoInvoicing   Boolean?
+  priceCycle      String?
+
+  // Entrega
+  deliveryType  DeliveryType
+  additional    Boolean?
+  daysToDeliver Int?
+  chargeFreight Boolean?
+  b2b           Boolean?
+
+  // vínculo com a campanha
+  campaignId String   @unique
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([campaignId])
+}
+
+model CampaignConfig {
+  id String @id @default(uuid())
+
+  contractPending          Boolean @default(false)
+  orderConfirmationEnabled Boolean @default(true)
+  confirmationTimeMinutes  Int     @default(10)
+
+  differentialFlow          Boolean @default(false)
+  blockOrdersDuringCampaign Boolean @default(false)
+  delinquencyPolicy         String?
+
+  campaignId String   @unique
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([campaignId])
 }
