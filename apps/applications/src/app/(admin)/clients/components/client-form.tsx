@@ -15,12 +15,16 @@ import {
   Paper,
   Select,
   TextField,
+  Typography,
 } from "@mui/material";
 import { cnpjMask } from "@/lib/masks";
 import { PhoneForm } from "./phone-form";
 import { AddressForm } from "./address-form";
+import { useClient } from "@/hooks/use-client";
 
 export const ClientForm = () => {
+  const { createClient, isLoading, createClientError } = useClient();
+
   const {
     handleSubmit,
     control,
@@ -93,7 +97,7 @@ export const ClientForm = () => {
   };
 
   const onSubmit = (data: FormClientValues) => {
-    console.log(data);
+    createClient(data);
   };
 
   return (
@@ -270,9 +274,22 @@ export const ClientForm = () => {
             ))}
           </Box>
 
+          {createClientError && (
+            <Box className="mb-4">
+              <Typography color="error" variant="body2">
+                {createClientError}
+              </Typography>
+            </Box>
+          )}
+
           <Box className="flex gap-4 mt-4">
-            <Button type="submit" variant="contained">
-              Salvar
+            <Button
+              type="submit"
+              variant="contained"
+              loading={isLoading}
+              disabled={isLoading}
+            >
+              {isLoading ? "Salvando..." : "Salvar Cliente"}
             </Button>
             <Button
               type="button"
