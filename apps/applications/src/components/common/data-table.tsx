@@ -18,10 +18,10 @@ import {
   IconButton,
   Tooltip,
 } from "@mui/material";
-import { ReactNode, useState, useMemo } from "react";
+import { ReactNode, useState, useMemo, useCallback } from "react";
 import { useMounted } from "@/hooks/use-mounted";
 
-export interface Column<T = any> {
+export interface Column<T = Record<string, unknown>> {
   id: keyof T;
   label: string;
   minWidth?: number;
@@ -30,11 +30,11 @@ export interface Column<T = any> {
   align?: "left" | "center" | "right";
   sortable?: boolean;
   filterable?: boolean;
-  format?: (value: any, row: T) => ReactNode;
-  renderCell?: (value: any, row: T, index: number) => ReactNode;
+  format?: (value: unknown, row: T) => ReactNode;
+  renderCell?: (value: unknown, row: T, index: number) => ReactNode;
 }
 
-export interface DataTableProps<T = any> {
+export interface DataTableProps<T = Record<string, unknown>> {
   // Data
   data: T[];
   columns: Column<T>[];
@@ -82,7 +82,7 @@ export interface DataTableProps<T = any> {
   onRowDoubleClick?: (row: T, index: number) => void;
 
   // Styling
-  sx?: any;
+  sx?: Record<string, unknown>;
   className?: string;
 
   // Features
@@ -90,11 +90,11 @@ export interface DataTableProps<T = any> {
   alternatingRows?: boolean;
 }
 
-export const DataTable = <T extends Record<string, any>>({
+export const DataTable = <T extends Record<string, unknown>>({
   data,
   columns,
   loading = false,
-  getRowId = (row, index) => row.id || index,
+  getRowId = (row: T) => (row as { id?: string | number }).id || Math.random().toString(),
   page = 0,
   rowsPerPage = 10,
   totalCount,
@@ -129,7 +129,7 @@ export const DataTable = <T extends Record<string, any>>({
   const mounted = useMounted();
 
   // Pagination handlers
-  const handlePageChange = (event: unknown, newPage: number) => {
+  const handlePageChange = (_: unknown, newPage: number) => {
     setInternalPage(newPage);
     onPageChange?.(newPage);
   };
@@ -144,24 +144,29 @@ export const DataTable = <T extends Record<string, any>>({
   };
 
   // Selection handlers
-  const isRowSelected = (rowId: string | number) =>
-    selectedRows.includes(rowId);
+  const isRowSelected = useCallback(
+    (rowId: string | number) => selectedRows.includes(rowId),
+    [selectedRows]
+  );
 
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const allIds = data.map((row, index) => getRowId(row, index));
+      const allIds = data.map((row) => getRowId(row));
       onSelectionChange?.(allIds);
     } else {
       onSelectionChange?.([]);
     }
   };
 
-  const handleRowSelect = (rowId: string | number) => {
-    const newSelected = isRowSelected(rowId)
-      ? selectedRows.filter((id) => id !== rowId)
-      : [...selectedRows, rowId];
-    onSelectionChange?.(newSelected);
-  };
+  const handleRowSelect = useCallback(
+    (rowId: string | number) => {
+      const newSelected = isRowSelected(rowId)
+        ? selectedRows.filter((id) => id !== rowId)
+        : [...selectedRows, rowId];
+      onSelectionChange?.(newSelected);
+    },
+    [isRowSelected, selectedRows, onSelectionChange]
+  );
 
   // Sort handler
   const handleSort = (column: keyof T) => {
@@ -217,10 +222,10 @@ export const DataTable = <T extends Record<string, any>>({
         width: 60,
         align: "center",
         sortable: false,
-        renderCell: (_, row, index) => (
+        renderCell: (_, row) => (
           <Checkbox
-            checked={isRowSelected(getRowId(row, index))}
-            onChange={() => handleRowSelect(getRowId(row, index))}
+            checked={isRowSelected(getRowId(row))}
+            onChange={() => handleRowSelect(getRowId(row))}
             size="small"
           />
         ),
@@ -232,9 +237,11 @@ export const DataTable = <T extends Record<string, any>>({
     columns,
     showRowNumbers,
     selectable,
-    selectedRows,
     currentPage,
     currentRowsPerPage,
+    getRowId,
+    handleRowSelect,
+    isRowSelected,
   ]);
 
   return (
@@ -373,7 +380,7 @@ export const DataTable = <T extends Record<string, any>>({
                 </TableRow>
               ) : (
                 displayedData.map((row, index) => {
-                  const rowId = getRowId(row, index);
+                  const rowId = getRowId(row);
                   const isSelected = isRowSelected(rowId);
 
                   return (
@@ -411,7 +418,7 @@ export const DataTable = <T extends Record<string, any>>({
                               ? column.renderCell(value, row, index)
                               : column.format
                                 ? column.format(value, row)
-                                : value}
+                                : String(value ?? '')}
                           </TableCell>
                         );
                       })}
