@@ -1,4 +1,4 @@
-export type Role = "OWNER" | "ADMIN" | "MANAGER" | "ANALYST" | "VIEWER";
+export type Role = "ADMIN" | "BUSINESS" | "TEAM_MEMBER" | "VIEWER";
 
 export interface MenuItem {
   label: string;
