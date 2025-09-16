@@ -15,7 +15,6 @@ import {
   Paper,
   Select,
   TextField,
-  Typography,
 } from "@mui/material";
 import { cnpjMask } from "@/lib/masks";
 import { PhoneForm } from "./phone-form";
