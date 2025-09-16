@@ -79,7 +79,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Auditoria de criação
-  createdClients  Client[]   @relation("UserCreatedClient")
+  createdClients   Client[]   @relation("UserCreatedClient")
   createdCampaigns Campaign[] @relation("UserCreatedCampaign")
   createdContracts Contract[] @relation("UserCreatedContract")
 }
@@ -115,7 +115,6 @@ model Address {
   clientId String?
   client   Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
-  label      String
   zipcode    String
   street     String
   number     String
