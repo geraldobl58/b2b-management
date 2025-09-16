@@ -91,50 +91,35 @@ export const formClientSchema = z.object({
         zipcode: z
           .string()
           .min(1, { message: "CEP é obrigatório." })
-          .regex(/^[0-9]{5}-?[0-9]{3}$/, { message: "CEP inválido." })
-          .optional()
-          .or(z.literal("")),
+          .regex(/^[0-9]{5}-?[0-9]{3}$/, { message: "CEP inválido." }),
         street: z
           .string()
           .min(1, { message: "A rua é obrigatória." })
           .refine((v) => !/^\d+$/.test(v), {
             message: "A rua não pode ser apenas números.",
-          })
-          .optional()
-          .or(z.literal("")),
-        number: z
-          .string()
-          .min(1, { message: "O número é obrigatório." })
-          .regex(/^\d+$/, { message: "O número deve conter apenas dígitos." })
-          .optional()
-          .or(z.literal("")),
+          }),
+        number: z.string().min(1, { message: "O número é obrigatório." }),
         complement: z.string().optional().or(z.literal("")),
         district: z
           .string()
           .min(1, { message: "O bairro é obrigatório." })
           .refine((v) => !/^\d+$/.test(v), {
             message: "O bairro não pode ser apenas números.",
-          })
-          .optional()
-          .or(z.literal("")),
+          }),
         city: z
           .string()
           .min(1, { message: "A cidade é obrigatória." })
           .refine((v) => !/^\d+$/.test(v), {
             message: "A cidade não pode ser apenas números.",
-          })
-          .optional()
-          .or(z.literal("")),
+          }),
         state: z
           .string()
           .min(1, { message: "O estado é obrigatório." })
           .length(2, "Estado deve ter 2 caracteres (sigla)")
-          .toUpperCase()
-          .optional()
-          .or(z.literal("")),
+          .toUpperCase(),
       })
     )
-    .optional(),
+    .min(1, { message: "Pelo menos um endereço é obrigatório." }),
 });
 
 export type FormClientValues = z.infer<typeof formClientSchema>;
