@@ -1,10 +1,16 @@
 "use client";
 
+import { Header } from "@/components/header";
+import { Box } from "@mui/material";
+
 const Dashboard = () => {
   return (
-    <div>
-      <div>Dashboard</div>
-    </div>
+    <Box>
+      <Header
+        title="Dashboard"
+        description="Gerencie o dashboard da sua empresa, aqui você pode visualizar métricas e informações importantes."
+      />
+    </Box>
   );
 };
 
