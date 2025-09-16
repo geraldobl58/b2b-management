@@ -4,7 +4,7 @@ import {
   CreateClientRequest,
   CreateClientResponse,
   ClientListResponse,
-  Client
+  Client,
 } from "@/types/client";
 
 export const client = {
@@ -27,7 +27,10 @@ export const client = {
     return response.data;
   },
 
-  async updateClient(id: string, data: Partial<CreateClientRequest>): Promise<{ data: Client }> {
+  async updateClient(
+    id: string,
+    data: Partial<CreateClientRequest>
+  ): Promise<{ data: Client }> {
     const response = await api.put<{ data: Client }>(`/clients/${id}`, data);
     return response.data;
   },
