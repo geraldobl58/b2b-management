@@ -7,7 +7,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { RegisterDto } from './dto/register.dto';
+import { AdminRegisterDto } from './dto/admin-register.dto';
 import { LoginDto } from './dto/login.dto';
 import {
   ApiTags,
@@ -17,6 +17,8 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 import {
   GetCurrentUser,
   type CurrentUser,
@@ -27,40 +29,6 @@ import { AuthService } from './auth.service';
 @Controller('auth')
 export class AuthController {
   constructor(private service: AuthService) {}
-
-  @Post('register')
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({
-    summary: 'Register a new user',
-    description: 'Creates a new user account with email and password',
-  })
-  @ApiBody({ type: RegisterDto })
-  @ApiResponse({
-    status: 201,
-    description: 'User successfully created',
-    schema: {
-      example: {
-        id: 'uuid',
-        name: 'John Doe',
-        email: 'john@example.com',
-        role: 'SALES',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 409,
-    description: 'Email already exists',
-    schema: {
-      example: {
-        statusCode: 409,
-        message: 'Email already in use',
-        error: 'Conflict',
-      },
-    },
-  })
-  register(@Body() dto: RegisterDto) {
-    return this.service.register(dto);
-  }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -107,7 +75,7 @@ export class AuthController {
         id: 'uuid',
         name: 'John Doe',
         email: 'john@example.com',
-        role: 'SALES',
+        role: 'VIEWER',
       },
     },
   })
@@ -117,5 +85,50 @@ export class AuthController {
   })
   getProfile(@GetCurrentUser() user: CurrentUser): CurrentUser {
     return user;
+  }
+
+  @Post('register')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Register new user',
+    description: 'Only ADMIN users can register new users with specific roles',
+  })
+  @ApiBody({ type: AdminRegisterDto })
+  @ApiResponse({
+    status: 201,
+    description: 'User successfully created by admin',
+    schema: {
+      example: {
+        id: 'uuid',
+        name: 'John Doe',
+        email: 'john@example.com',
+        role: 'BUSINESS',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or missing token',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Only ADMIN users can access this endpoint',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Email already exists',
+    schema: {
+      example: {
+        statusCode: 409,
+        message: 'Email already in use',
+        error: 'Conflict',
+      },
+    },
+  })
+  register(@Body() dto: AdminRegisterDto) {
+    return this.service.adminRegister(dto);
   }
 }

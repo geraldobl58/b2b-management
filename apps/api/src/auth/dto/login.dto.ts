@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 export class LoginDto {
   @IsEmail()
-  @ApiProperty({ example: 'janedoe@example.com' })
+  @ApiProperty({ example: 'admin@example.com' })
   email: string;
 
   @IsString()

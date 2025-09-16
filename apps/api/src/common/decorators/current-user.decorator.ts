@@ -3,9 +3,8 @@ import { AuthenticatedRequest } from '../interfaces/request.interface';
 import { Role } from '@prisma/client';
 
 export interface CurrentUser {
-  id: string;
+  sub: string;
   email: string;
-  name: string;
   role: Role;
 }
 
