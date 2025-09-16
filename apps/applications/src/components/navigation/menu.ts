@@ -1,11 +1,10 @@
 import type { MenuItem, Role } from "./types";
 
-const ALL: Role[] = ["OWNER", "ADMIN", "MANAGER", "ANALYST", "VIEWER"];
-const ADMIN_UP: Role[] = ["OWNER", "ADMIN"];
-const MANAGER_UP: Role[] = ["OWNER", "ADMIN", "MANAGER"];
+const ALL: Role[] = ["ADMIN", "BUSINESS", "TEAM_MEMBER", "VIEWER"];
+const ADMIN_ONLY: Role[] = ["ADMIN"];
+const ADMIN_BUSINESS: Role[] = ["ADMIN", "BUSINESS"];
 
 export const sidebarMenu: MenuItem[] = [
-  // === HOME ===
   {
     label: "Dashboard",
     path: "/dashboard",
@@ -13,190 +12,86 @@ export const sidebarMenu: MenuItem[] = [
     roles: ALL,
   },
 
-  // === INTELIGÊNCIA COMERCIAL (core do projeto) ===
+  // === CAMPANHAS ===
   {
-    label: "Inteligência",
-    icon: "Sparkles",
-    roles: MANAGER_UP,
-    items: [
-      {
-        label: "Empresas",
-        path: "/companies",
-        icon: "Building2",
-        roles: MANAGER_UP,
-      },
-      {
-        label: "Contatos",
-        path: "/contacts",
-        icon: "Contact",
-        roles: MANAGER_UP,
-      },
-      {
-        label: "Leads",
-        path: "/leads",
-        icon: "Pipeline",
-        roles: MANAGER_UP,
-      },
-      {
-        label: "Pipeline",
-        path: "/pipeline",
-        icon: "KanbanSquare",
-        roles: MANAGER_UP,
-      },
-      {
-        label: "Sinais",
-        path: "/signals",
-        icon: "Activity",
-        roles: MANAGER_UP,
-      },
-      {
-        label: "Vagas",
-        path: "/jobs",
-        icon: "Briefcase",
-        roles: MANAGER_UP,
-      },
-      {
-        label: "Alertas",
-        path: "/alerts",
-        icon: "BellRing",
-        roles: ALL,
-      },
-      {
-        label: "Enriquecimento (IA)",
-        path: "/enrichment/runs",
-        icon: "Brain",
-        roles: MANAGER_UP,
-      },
-      {
-        label: "Playbooks de IA",
-        path: "/enrichment/playbooks",
-        icon: "BezierCurve",
-        roles: MANAGER_UP,
-      },
-      {
-        label: "Scraping & Coleta",
-        path: "/scrape/tasks",
-        icon: "ScanSearch",
-        roles: MANAGER_UP,
-      },
-      {
-        label: "Logs de Coleta",
-        path: "/scrape/logs",
-        icon: "ScrollText",
-        roles: MANAGER_UP,
-      },
-    ],
+    label: "Campanhas",
+    path: "/campaigns",
+    icon: "Megaphone",
+    roles: ADMIN_BUSINESS,
   },
-  // === RELATÓRIOS (mantido, + atalhos úteis do core) ===
+
+  // === CLIENTES ===
+  {
+    label: "Clientes",
+    path: "/clients",
+    icon: "Building2",
+    roles: ALL,
+  },
+
+  // === CONTRATOS ===
+  {
+    label: "Contratos",
+    path: "/contracts",
+    icon: "FileText",
+    roles: ADMIN_BUSINESS,
+  },
+
+  // === RELATÓRIOS ===
   {
     label: "Relatórios",
-    icon: "FileBarChart",
+    icon: "BarChart3",
     roles: ALL,
     items: [
       {
-        label: "Dashboards",
-        path: "/reports/dashboards",
+        label: "Dashboard",
+        path: "/reports/dashboard",
         icon: "PieChart",
         roles: ALL,
       },
       {
-        label: "Relatórios",
-        path: "/reports",
-        icon: "FileText",
+        label: "Clientes",
+        path: "/reports/clients",
+        icon: "Building2",
         roles: ALL,
       },
       {
-        label: "Leads por Sinais",
-        path: "/reports/leads-by-signals",
-        icon: "Radar",
-        roles: MANAGER_UP,
+        label: "Campanhas",
+        path: "/reports/campaigns",
+        icon: "TrendingUp",
+        roles: ADMIN_BUSINESS,
       },
       {
-        label: "Conversão por Fonte",
-        path: "/reports/conversion-by-source",
-        icon: "BarChart2",
-        roles: MANAGER_UP,
-      },
-      {
-        label: "Tempo por Estágio",
-        path: "/reports/time-by-stage",
-        icon: "Hourglass",
-        roles: MANAGER_UP,
-      },
-      {
-        label: "Novo relatório",
-        path: "/reports/new",
-        icon: "Plus",
-        roles: MANAGER_UP,
+        label: "Financeiro",
+        path: "/reports/financial",
+        icon: "DollarSign",
+        roles: ADMIN_BUSINESS,
       },
     ],
   },
 
-  // === AUTOMAÇÃO (mantido) ===
-  {
-    label: "Automação",
-    icon: "Workflow",
-    roles: MANAGER_UP,
-    items: [
-      {
-        label: "Integrações",
-        path: "/integrations",
-        icon: "Plug",
-        roles: ADMIN_UP,
-      },
-      {
-        label: "Automações",
-        path: "/automations",
-        icon: "Bot",
-        roles: MANAGER_UP,
-      },
-      {
-        label: "Webhooks",
-        path: "/webhooks",
-        icon: "Webhook",
-        roles: ADMIN_UP,
-      },
-    ],
-  },
-
-  // === TAREFAS (novo, útil p/ follow-ups do pipeline) ===
-  {
-    label: "Tarefas",
-    path: "/tasks",
-    icon: "ListTodo",
-    roles: ALL,
-  },
-
-  // === CONFIGURAÇÕES (mantido, sem billing) ===
+  // === CONFIGURAÇÕES ===
   {
     label: "Configurações",
     icon: "Settings",
-    roles: ADMIN_UP,
+    roles: ADMIN_ONLY,
     items: [
       {
-        label: "Time & Permissões",
-        path: "/settings/team",
-        icon: "Shield",
-        roles: ADMIN_UP,
-      },
-      // Removido Planos & Cobrança (não SaaS)
-      {
-        label: "Preferências",
-        path: "/settings/preferences",
-        icon: "Sliders",
-        roles: ALL,
+        label: "Usuários",
+        path: "/settings/users",
+        icon: "Users",
+        roles: ADMIN_ONLY,
       },
       {
-        label: "Campos Customizados",
-        path: "/settings/custom-fields",
-        icon: "Wrench",
-        roles: ADMIN_UP,
+        label: "Perfis",
+        path: "/settings/profiles",
+        icon: "UserCog",
+        roles: ADMIN_ONLY,
       },
       {
-        label: "Auditoria",
-        path: "/settings/audit",
-        icon: "FileSearch",
-        roles: ADMIN_UP,
+        label: "Sistema",
+        path: "/settings/system",
+        icon: "Cog",
+        roles: ADMIN_ONLY,
       },
     ],
   },
