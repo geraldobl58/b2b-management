@@ -8,10 +8,9 @@ const prisma = new PrismaClient();
 
 // Helper to generate Brazilian CNPJ
 function generateCNPJ(): string {
-  const digits = Array.from({ length: 8 }, () =>
-    faker.number.int({ min: 0, max: 9 }),
-  );
-  const branch = '0001';
+  // Generate unique 8-digit number
+  const digits = Array.from({ length: 8 }, () => faker.number.int({ min: 0, max: 9 }));
+  const branch = faker.string.numeric(4); // Make branch random too
   const base = digits.join('') + branch;
 
   // Calculate verification digits (simplified)
@@ -73,6 +72,10 @@ function generateZipcode(): string {
 async function main() {
   console.log('🌱 Starting seed with faker data...');
 
+  // Clear existing clients first
+  await prisma.client.deleteMany();
+  console.log('🗑️ Cleared existing clients');
+
   const defaultPassword = await bcrypt.hash('MyPass123!', 10);
 
   // Create test users for each role
@@ -122,10 +125,16 @@ async function main() {
 
   const users = [admin, business];
   const createdClients: any[] = [];
+  const usedCNPJs = new Set<string>();
 
   // Create 15 fake clients
   for (let i = 0; i < 15; i++) {
-    const cnpj = generateCNPJ();
+    let cnpj = generateCNPJ();
+    // Ensure unique CNPJ
+    while (usedCNPJs.has(cnpj)) {
+      cnpj = generateCNPJ();
+    }
+    usedCNPJs.add(cnpj);
     const companyName = faker.company.name() + ' LTDA';
     const fantasyName = faker.company.name();
     const taxpayerType = faker.helpers.arrayElement(
@@ -136,10 +145,6 @@ async function main() {
     // Generate 1-3 addresses
     const addressCount = faker.number.int({ min: 1, max: 3 });
     const addresses = Array.from({ length: addressCount }, (_, index) => ({
-      label:
-        index === 0
-          ? 'Sede Principal'
-          : faker.helpers.arrayElement(['Filial', 'Depósito', 'Escritório']),
       zipcode: generateZipcode(),
       street: faker.location.streetAddress(),
       number: faker.location.buildingNumber(),
