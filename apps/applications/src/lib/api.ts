@@ -11,6 +11,12 @@ const api = axios.create({
 // Interceptor para adicionar o token de autorização nas requisições
 api.interceptors.request.use(
   (config) => {
+    // Se já existe um token no header (passado manualmente), usa esse
+    if (config.headers.Authorization) {
+      return config;
+    }
+
+    // Caso contrário, tenta pegar do cookie (client-side)
     const token = cookieUtils.getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -33,5 +39,16 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Função para fazer requisições com token manual (útil para server actions)
+export const createApiWithToken = (token: string) => {
+  return axios.create({
+    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
 
 export default api;
