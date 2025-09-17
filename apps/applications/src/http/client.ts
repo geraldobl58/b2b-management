@@ -47,7 +47,7 @@ export const client = {
 
   async getClientById(id: string, token?: string) {
     const apiInstance = getApiInstance(token);
-    const response = await apiInstance.get(`/clients/${id}`);
+    const response = await apiInstance.get<Client>(`/clients/${id}`);
     return response.data;
   },
 
@@ -57,7 +57,7 @@ export const client = {
     token?: string
   ): Promise<{ data: Client }> {
     const apiInstance = getApiInstance(token);
-    const response = await apiInstance.put<{ data: Client }>(
+    const response = await apiInstance.patch<{ data: Client }>(
       `/clients/${id}`,
       data
     );

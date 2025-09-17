@@ -72,10 +72,10 @@ export async function getClientByIdAction(
       };
     }
 
-    const response = await client.getClientById(id, token);
+    const clientData = await client.getClientById(id, token);
     return {
       success: true,
-      data: response.data,
+      data: clientData,
     };
   } catch (error: unknown) {
     console.error("Erro ao buscar cliente:", error);

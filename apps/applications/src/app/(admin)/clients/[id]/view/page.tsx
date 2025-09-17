@@ -9,12 +9,13 @@ import {
   Button,
   CircularProgress,
   Alert,
-  Divider,
-  Chip,
+  Stack,
+  Container,
 } from "@mui/material";
 import { ArrowBack, Edit } from "@mui/icons-material";
 import { Header } from "@/components/header";
 import { useClientById } from "@/hooks/use-client";
+import { useMounted } from "@/hooks/use-mounted";
 import { Phone, Address } from "@/types/client";
 
 interface ClientViewPageProps {
@@ -23,8 +24,28 @@ interface ClientViewPageProps {
   }>;
 }
 
+const TAXPAYER_LABELS = {
+  MEI: "MEI",
+  SIMPLES_NACIONAL: "Simples Nacional",
+  LUCRO_PRESUMIDO: "Lucro Presumido",
+  LUCRO_REAL: "Lucro Real",
+  INSENTO: "Insento",
+} as const;
+
+const PHONE_LABELS = {
+  MOBILE: "Celular",
+  LANDLINE: "Fixo",
+  WHATSAPP: "WhatsApp",
+} as const;
+
+const getTaxpayerLabel = (type: string) =>
+  TAXPAYER_LABELS[type as keyof typeof TAXPAYER_LABELS] || type || "-";
+const getPhoneLabel = (type: string) =>
+  PHONE_LABELS[type as keyof typeof PHONE_LABELS] || type || "Não informado";
+
 const ClientViewPage = ({ params }: ClientViewPageProps) => {
   const router = useRouter();
+  const mounted = useMounted();
   const { id } = use(params);
 
   const { data, isLoading, error } = useClientById(id);
@@ -37,6 +58,28 @@ const ClientViewPage = ({ params }: ClientViewPageProps) => {
     router.push("/clients");
   };
 
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return (
+      <Box>
+        <Header
+          title="Visualizar Cliente"
+          description="Detalhes do cliente selecionado."
+        />
+        <Container>
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            minHeight="400px"
+          >
+            <CircularProgress />
+          </Box>
+        </Container>
+      </Box>
+    );
+  }
+
   // Early return patterns to avoid hydration mismatch
   if (isLoading) {
     return (
@@ -45,14 +88,16 @@ const ClientViewPage = ({ params }: ClientViewPageProps) => {
           title="Visualizar Cliente"
           description="Detalhes do cliente selecionado."
         />
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="400px"
-        >
-          <CircularProgress />
-        </Box>
+        <Container>
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            minHeight="400px"
+          >
+            <CircularProgress size={40} />
+          </Box>
+        </Container>
       </Box>
     );
   }
@@ -64,10 +109,8 @@ const ClientViewPage = ({ params }: ClientViewPageProps) => {
           title="Visualizar Cliente"
           description="Detalhes do cliente selecionado."
         />
-        <Alert severity="error" sx={{ mt: 2 }}>
-          {error || "Erro ao carregar cliente"}
-        </Alert>
-        <Box sx={{ mt: 2 }}>
+        <Container>
+          <Alert severity="error">{error || "Erro ao carregar cliente"}</Alert>
           <Button
             variant="outlined"
             startIcon={<ArrowBack />}
@@ -75,7 +118,7 @@ const ClientViewPage = ({ params }: ClientViewPageProps) => {
           >
             Voltar para Lista
           </Button>
-        </Box>
+        </Container>
       </Box>
     );
   }
@@ -87,10 +130,8 @@ const ClientViewPage = ({ params }: ClientViewPageProps) => {
           title="Visualizar Cliente"
           description="Detalhes do cliente selecionado."
         />
-        <Alert severity="warning" sx={{ mt: 2 }}>
-          Cliente não encontrado
-        </Alert>
-        <Box sx={{ mt: 2 }}>
+        <Box>
+          <Alert severity="warning">Cliente não encontrado</Alert>
           <Button
             variant="outlined"
             startIcon={<ArrowBack />}
@@ -109,7 +150,7 @@ const ClientViewPage = ({ params }: ClientViewPageProps) => {
         title="Visualizar Cliente"
         description="Detalhes do cliente selecionado."
         content={
-          <Box display="flex" gap={2}>
+          <Stack direction="row" spacing={2}>
             <Button
               variant="outlined"
               startIcon={<ArrowBack />}
@@ -124,225 +165,161 @@ const ClientViewPage = ({ params }: ClientViewPageProps) => {
             >
               Editar
             </Button>
-          </Box>
+          </Stack>
         }
       />
-
-      <Paper elevation={3} sx={{ p: 4, mt: 3 }}>
-        {/* Informações Básicas */}
-        <Typography variant="h6" gutterBottom>
-          Informações Básicas
-        </Typography>
-
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-            gap: 3,
-            mb: 4,
-          }}
-        >
+      <Paper
+        elevation={1}
+        sx={{ p: 3, mb: 3, width: "100%", display: "block" }}
+      >
+        <Box className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Box>
-            <Typography variant="subtitle2" color="text.secondary">
-              CNPJ
+            <Typography variant="body1" gutterBottom>
+              CNPJ:
             </Typography>
-            <Typography variant="body1" fontWeight="medium">
-              {data.cnpj || "-"}
+            <Typography variant="h6" gutterBottom>
+              {data.cnpj}
             </Typography>
           </Box>
-
           <Box>
-            <Typography variant="subtitle2" color="text.secondary">
-              Razão Social
+            <Typography variant="body1" gutterBottom>
+              Nome da empresa:
             </Typography>
-            <Typography variant="body1" fontWeight="medium">
-              {data.companyName || "-"}
+            <Typography variant="h6" gutterBottom>
+              {data.companyName}
             </Typography>
           </Box>
-
           <Box>
-            <Typography variant="subtitle2" color="text.secondary">
-              Nome Fantasia
+            <Typography variant="body1" gutterBottom>
+              Nome fanasia:
             </Typography>
-            <Typography variant="body1" fontWeight="medium">
-              {data.fantasyName || "-"}
+            <Typography variant="h6" gutterBottom>
+              {data.fantasyName}
             </Typography>
           </Box>
-
           <Box>
-            <Typography variant="subtitle2" color="text.secondary">
-              Tipo de Contribuinte
+            <Typography variant="body1" gutterBottom>
+              Tipo de contribuinte:
             </Typography>
-            <Chip
-              label={data.taxpayerType || "Não informado"}
-              size="small"
-              variant="outlined"
-            />
+            <Typography variant="h6" gutterBottom>
+              {getTaxpayerLabel(data.taxpayerType)}
+            </Typography>
           </Box>
-
           <Box>
-            <Typography variant="subtitle2" color="text.secondary">
-              Inscrição Estadual
+            <Typography variant="body1" gutterBottom>
+              Inscrição estadual:
             </Typography>
-            <Typography variant="body1" fontWeight="medium">
+            <Typography variant="h6" gutterBottom>
               {data.stateRegistration || "-"}
             </Typography>
           </Box>
-
           <Box>
-            <Typography variant="subtitle2" color="text.secondary">
-              Tipo de Relacionamento
+            <Typography variant="body1" gutterBottom>
+              Tipo de relação:
             </Typography>
-            <Typography variant="body1" fontWeight="medium">
+            <Typography variant="h6" gutterBottom>
               {data.typeRelationship || "-"}
             </Typography>
           </Box>
         </Box>
+      </Paper>
 
-        <Divider sx={{ my: 3 }} />
-
-        {/* Telefones */}
-        <Typography variant="h6" gutterBottom>
-          Telefones
-        </Typography>
-
-        {data.phones && data.phones.length > 0 ? (
+      <Paper
+        elevation={1}
+        sx={{ p: 3, mb: 3, width: "100%", display: "block" }}
+      >
+        {data.addresses.map((address: Address) => (
           <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-              gap: 2,
-              mb: 4,
-            }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            key={address.id}
           >
-            {data.phones.map((phone: Phone, index: number) => (
-              <Box
-                key={index}
-                sx={{
-                  p: 2,
-                  border: 1,
-                  borderColor: "grey.300",
-                  borderRadius: 1,
-                }}
-              >
-                <Typography variant="subtitle2" color="text.secondary">
-                  {phone.type === "LANDLINE"
-                    ? "Fixo"
-                    : phone.type === "MOBILE"
-                      ? "Celular"
-                      : phone.type === "WHATSAPP"
-                        ? "WhatsApp"
-                        : phone.type}
-                </Typography>
-                <Typography variant="body1" fontWeight="medium">
-                  {phone.number || "-"}
-                </Typography>
-              </Box>
-            ))}
+            <Box>
+              <Typography variant="body1" gutterBottom>
+                Endereço:
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                {address.street || "-"}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body1" gutterBottom>
+                Cep:
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                {address.zipcode || "-"}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body1" gutterBottom>
+                Número:
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                {address.number || "-"}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body1" gutterBottom>
+                Complemento:
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                {address.complement || "-"}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body1" gutterBottom>
+                Bairro:
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                {address.district || "-"}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body1" gutterBottom>
+                Cidade:
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                {address.city || "-"}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body1" gutterBottom>
+                Estado:
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                {address.state || "-"}
+              </Typography>
+            </Box>
           </Box>
-        ) : (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-            Nenhum telefone cadastrado
-          </Typography>
-        )}
+        ))}
+      </Paper>
 
-        <Divider sx={{ my: 3 }} />
-
-        {/* Endereços */}
-        <Typography variant="h6" gutterBottom>
-          Endereços
-        </Typography>
-
-        {data.addresses && data.addresses.length > 0 ? (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            {data.addresses.map((address: Address, index: number) => (
-              <Box
-                key={index}
-                sx={{
-                  p: 3,
-                  border: 1,
-                  borderColor: "grey.300",
-                  borderRadius: 1,
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
-                    gap: 2,
-                  }}
-                >
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      CEP
-                    </Typography>
-                    <Typography variant="body1">
-                      {address.zipcode || "-"}
-                    </Typography>
-                  </Box>
-
-                  <Box sx={{ gridColumn: { xs: "1", md: "span 2" } }}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Logradouro
-                    </Typography>
-                    <Typography variant="body1">
-                      {address.street || "-"}
-                    </Typography>
-                  </Box>
-
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Número
-                    </Typography>
-                    <Typography variant="body1">
-                      {address.number || "-"}
-                    </Typography>
-                  </Box>
-
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Complemento
-                    </Typography>
-                    <Typography variant="body1">
-                      {address.complement || "-"}
-                    </Typography>
-                  </Box>
-
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Bairro
-                    </Typography>
-                    <Typography variant="body1">
-                      {address.district || "-"}
-                    </Typography>
-                  </Box>
-
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Cidade
-                    </Typography>
-                    <Typography variant="body1">
-                      {address.city || "-"}
-                    </Typography>
-                  </Box>
-
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Estado
-                    </Typography>
-                    <Typography variant="body1">
-                      {address.state || "-"}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Box>
-            ))}
+      <Paper
+        elevation={1}
+        sx={{ p: 3, mb: 3, width: "100%", display: "block" }}
+      >
+        {data.phones.map((phone: Phone) => (
+          <Box
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            key={phone.id}
+          >
+            <Box>
+              <Typography variant="body1" gutterBottom>
+                Telefone:
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                {getPhoneLabel(phone.type)}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body1" gutterBottom>
+                Número
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                {phone.number || "-"}
+              </Typography>
+            </Box>
           </Box>
-        ) : (
-          <Typography variant="body2" color="text.secondary">
-            Nenhum endereço cadastrado
-          </Typography>
-        )}
+        ))}
       </Paper>
     </Box>
   );
