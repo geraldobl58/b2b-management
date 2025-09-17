@@ -92,7 +92,15 @@ export async function updateClientAction(
   data: Partial<CreateClientRequest>
 ): Promise<ApiResponse<Client>> {
   try {
-    const response = await client.updateClient(id, data);
+    const token = await getTokenFromCookies();
+    if (!token) {
+      return {
+        success: false,
+        error: "Token de autenticação não encontrado",
+      };
+    }
+
+    const response = await client.updateClient(id, data, token);
     return {
       success: true,
       data: response.data,
@@ -107,7 +115,15 @@ export async function deleteClientAction(
   id: string
 ): Promise<ApiResponse<{ success: boolean }>> {
   try {
-    const response = await client.deleteClient(id);
+    const token = await getTokenFromCookies();
+    if (!token) {
+      return {
+        success: false,
+        error: "Token de autenticação não encontrado",
+      };
+    }
+
+    const response = await client.deleteClient(id, token);
     return {
       success: true,
       data: response,
