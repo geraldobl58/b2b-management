@@ -88,9 +88,9 @@ const ClientsPage = () => {
             className="normal-case"
             variant="contained"
             color="primary"
+            startIcon={<PlusIcon />}
             onClick={() => router.push("/clients/new")}
           >
-            <PlusIcon className="mr-2" size={16} />
             Adicionar Cliente
           </Button>
         }
