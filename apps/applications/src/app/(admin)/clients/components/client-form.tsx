@@ -20,17 +20,39 @@ import {
 import { cnpjMask } from "@/lib/masks";
 import { PhoneForm } from "./phone-form";
 import { AddressForm } from "./address-form";
-import { useClient } from "@/hooks/use-client";
+import { useClient, useClientById } from "@/hooks/use-client";
 
 interface ClientFormProps {
   onSuccess?: () => void;
+  mode?: "create" | "edit";
+  client?: string; // client ID for edit mode
 }
 
-export const ClientForm = ({ onSuccess }: ClientFormProps) => {
-  const { createClient, isLoading, createClientError } = useClient();
+export const ClientForm = ({
+  onSuccess,
+  mode = "create",
+  client,
+}: ClientFormProps) => {
+  const {
+    createClient,
+    updateClient,
+    isLoading,
+    isUpdating,
+    createClientError,
+    updateClientError,
+  } = useClient();
+
+  // Get client data for edit mode
+  const clientId = client || "";
+  const {
+    data,
+    isLoading: isLoadingClient,
+    error: clientError,
+  } = useClientById(mode === "edit" && clientId ? clientId : "");
 
   // Track previous loading state to detect completion
   const prevIsLoadingRef = useRef(false);
+  const currentLoading = mode === "create" ? isLoading : isUpdating;
 
   const {
     handleSubmit,
@@ -64,16 +86,59 @@ export const ClientForm = ({ onSuccess }: ClientFormProps) => {
     },
   });
 
+  // Load client data for edit mode
+  useEffect(() => {
+    if (mode === "edit" && data) {
+      reset({
+        cnpj: data.cnpj || "",
+        companyName: data.companyName || "",
+        fantasyName: data.fantasyName || "",
+        taxpayerType:
+          (data.taxpayerType as
+            | "INSENTO"
+            | "MEI"
+            | "SIMPLES_NACIONAL"
+            | "LUCRO_PRESUMIDO"
+            | "LUCRO_REAL") || "SIMPLES_NACIONAL",
+        stateRegistration: data.stateRegistration || "",
+        typeRelationship: data.typeRelationship || "",
+        phones: data.phones?.length
+          ? data.phones
+          : [{ type: "LANDLINE", number: "" }],
+        addresses: data.addresses?.length
+          ? data.addresses
+          : [
+              {
+                zipcode: "",
+                street: "",
+                number: "",
+                complement: "",
+                district: "",
+                city: "",
+                state: "",
+              },
+            ],
+      });
+    }
+  }, [mode, data, reset]);
+
   // Handle success callback
   useEffect(() => {
     // Check if we just finished loading (was loading, now not loading) and no error
-    if (onSuccess && prevIsLoadingRef.current && !isLoading && !createClientError) {
+    const currentError =
+      mode === "create" ? createClientError : updateClientError;
+    if (
+      onSuccess &&
+      prevIsLoadingRef.current &&
+      !currentLoading &&
+      !currentError
+    ) {
       onSuccess();
     }
 
     // Update previous loading state
-    prevIsLoadingRef.current = isLoading;
-  }, [onSuccess, isLoading, createClientError]);
+    prevIsLoadingRef.current = currentLoading;
+  }, [onSuccess, currentLoading, createClientError, updateClientError, mode]);
 
   const {
     fields: phoneFields,
@@ -119,8 +184,54 @@ export const ClientForm = ({ onSuccess }: ClientFormProps) => {
   };
 
   const onSubmit = (data: FormClientValues) => {
-    createClient(data);
+    if (mode === "edit" && clientId) {
+      updateClient({ id: clientId, data });
+    } else {
+      createClient(data);
+    }
   };
+
+  // Show loading state when loading client data for edit
+  if (mode === "edit" && isLoadingClient) {
+    return (
+      <Box className="w-full">
+        <Paper
+          elevation={3}
+          sx={{ display: "block", width: "100%" }}
+          className="w-full max-w-full p-4 shadow-md rounded-md space-y-6"
+        >
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            minHeight="200px"
+          >
+            <Typography>Carregando dados do cliente...</Typography>
+          </Box>
+        </Paper>
+      </Box>
+    );
+  }
+
+  // Show error state when failed to load client data
+  if (mode === "edit" && clientError) {
+    return (
+      <Box className="w-full">
+        <Paper
+          elevation={3}
+          sx={{ display: "block", width: "100%" }}
+          className="w-full max-w-full p-4 shadow-md rounded-md space-y-6"
+        >
+          <Box className="mb-4 p-3 border border-red-300 rounded-md bg-red-50">
+            <Typography color="error" variant="body2" className="font-medium">
+              Erro ao carregar dados do cliente:{" "}
+              {clientError || "Erro desconhecido"}
+            </Typography>
+          </Box>
+        </Paper>
+      </Box>
+    );
+  }
 
   return (
     <Box className="w-full">
@@ -296,14 +407,19 @@ export const ClientForm = ({ onSuccess }: ClientFormProps) => {
             ))}
           </Box>
 
-          {createClientError && (
+          {(createClientError || updateClientError) && (
             <Box className="mb-4 p-3 border border-red-300 rounded-md bg-red-50">
               <Typography color="error" variant="body2" className="font-medium">
-                {createClientError}
+                {createClientError || updateClientError}
               </Typography>
-              {createClientError.includes("CNPJ") && (
-                <Typography variant="caption" color="error" className="mt-1 block">
-                  Verifique se o CNPJ está correto ou se já não existe um cliente cadastrado com este CNPJ.
+              {(createClientError || updateClientError)?.includes("CNPJ") && (
+                <Typography
+                  variant="caption"
+                  color="error"
+                  className="mt-1 block"
+                >
+                  Verifique se o CNPJ está correto ou se já não existe um
+                  cliente cadastrado com este CNPJ.
                 </Typography>
               )}
             </Box>
@@ -313,10 +429,16 @@ export const ClientForm = ({ onSuccess }: ClientFormProps) => {
             <Button
               type="submit"
               variant="contained"
-              loading={isLoading}
-              disabled={isLoading}
+              loading={currentLoading}
+              disabled={currentLoading || isLoadingClient}
             >
-              {isLoading ? "Salvando..." : "Salvar Cliente"}
+              {currentLoading
+                ? mode === "edit"
+                  ? "Atualizando..."
+                  : "Salvando..."
+                : mode === "edit"
+                  ? "Atualizar Cliente"
+                  : "Salvar Cliente"}
             </Button>
             <Button
               type="button"

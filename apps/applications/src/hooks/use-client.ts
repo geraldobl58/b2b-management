@@ -278,3 +278,34 @@ export const useClient = (initialParams?: UseClientParams) => {
     deleteClientError: deleteClientMutation.error?.message,
   };
 };
+
+export const useClientById = (id: string) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["client", id],
+    queryFn: async () => {
+      try {
+        const result = await client.getClientById(id);
+        return result;
+      } catch (error) {
+        if (error && typeof error === "object" && "response" in error) {
+          const axiosError = error as {
+            response?: { status?: number; data?: unknown };
+          };
+          if (axiosError.response?.status === 401) {
+            cookieUtils.removeToken();
+          }
+        }
+        throw error;
+      }
+    },
+    enabled: cookieUtils.hasToken(),
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  });
+
+  return {
+    data: data,
+    isLoading,
+    error: error?.message,
+  };
+};

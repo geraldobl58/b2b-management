@@ -1,15 +1,17 @@
 import { Column, TableHelpers } from "@/components/common/data-table";
 
 import { Chip } from "@mui/material";
-import { Edit, Trash } from "lucide-react";
+import { Edit, Eye, Trash } from "lucide-react";
 import { Client } from "@/types/client";
 
 interface ColumnsProps {
+  onView?: (client: Client) => void;
   onEdit?: (client: Client) => void;
   onDelete?: (client: Client) => void;
 }
 
 export const createColumns = ({
+  onView,
   onEdit,
   onDelete,
 }: ColumnsProps = {}): Column[] => [
@@ -114,9 +116,19 @@ export const createColumns = ({
     label: "Ações",
     minWidth: 120,
     sortable: false,
-    renderCell: (value: unknown, row: Record<string, unknown>) => {
+    renderCell: (_: unknown, row: Record<string, unknown>) => {
       const client = row as unknown as Client;
       return TableHelpers.renderActions([
+        {
+          icon: <Eye size={16} />,
+          label: "Visualizar",
+          color: "primary",
+          onClick: () => {
+            if (onView) {
+              onView(client);
+            }
+          },
+        },
         {
           icon: <Edit size={16} />,
           label: "Editar",

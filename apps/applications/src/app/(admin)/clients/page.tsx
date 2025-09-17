@@ -65,6 +65,10 @@ const ClientsPage = () => {
     confirmText: "Excluir",
   });
 
+  const handleViewClient = (client: Client) => {
+    router.push(`/clients/${client.id}/view`);
+  };
+
   const handleEditClient: (client: Client) => void = (client: Client) => {
     router.push(`/clients/${client.id}`);
   };
@@ -75,6 +79,7 @@ const ClientsPage = () => {
   };
 
   const columns = createColumns({
+    onView: handleViewClient,
     onEdit: handleEditClient,
     onDelete: handleDeleteClient,
   });

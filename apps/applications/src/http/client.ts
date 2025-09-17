@@ -45,9 +45,9 @@ export const client = {
     return response.data;
   },
 
-  async getClientById(id: string, token?: string): Promise<{ data: Client }> {
+  async getClientById(id: string, token?: string) {
     const apiInstance = getApiInstance(token);
-    const response = await apiInstance.get<{ data: Client }>(`/clients/${id}`);
+    const response = await apiInstance.get(`/clients/${id}`);
     return response.data;
   },
 

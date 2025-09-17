@@ -82,6 +82,7 @@ export async function getClientByIdAction(
     return handleApiError(error);
   }
 }
+
 export async function updateClientAction(
   id: string,
   data: FormClientValues
