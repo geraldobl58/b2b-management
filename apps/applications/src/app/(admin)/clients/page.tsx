@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { PlusIcon, Search, X } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 
 import { DataTable } from "@/components/common/data-table";
 import { Header } from "@/components/header";
@@ -24,11 +25,17 @@ import {
   Paper,
   Stack,
 } from "@mui/material";
-import { columns } from "./components/columns";
+import { createColumns } from "./components/columns";
 import { cnpjMask } from "@/lib/masks";
+import { Client } from "@/types/client";
+import {
+  ConfirmationDialog,
+  useConfirmationDialog,
+} from "@/components/common/confirmation-dialog";
 
 const ClientsPage = () => {
   const router = useRouter();
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
   const {
     clients,
@@ -45,7 +52,32 @@ const ClientsPage = () => {
     setLimit,
     applyFilters,
     clearFilters,
+    deleteClient,
+    isDeleting,
+    deleteClientError,
   } = useClient();
+
+  const deleteDialog = useConfirmationDialog({
+    title: "Excluir Cliente",
+    message:
+      "Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.",
+    variant: "delete",
+    confirmText: "Excluir",
+  });
+
+  const handleEditClient = (client: Client) => {
+    router.push(`/clients/${client.id}`);
+  };
+
+  const handleDeleteClient = (client: Client) => {
+    setSelectedClient(client);
+    deleteDialog.showDialog();
+  };
+
+  const columns = createColumns({
+    onEdit: handleEditClient,
+    onDelete: handleDeleteClient,
+  });
 
   const {
     register,
@@ -259,6 +291,44 @@ const ClientsPage = () => {
           />
         </div>
       </Paper>
+
+      {deleteClientError && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          Erro ao excluir cliente: {deleteClientError}
+        </Alert>
+      )}
+
+      <ConfirmationDialog
+        open={deleteDialog.isOpen}
+        onClose={deleteDialog.hideDialog}
+        onConfirm={async () => {
+          if (selectedClient) {
+            console.log(
+              "Deletando cliente:",
+              selectedClient.id,
+              selectedClient.companyName
+            );
+            try {
+              await deleteClient(selectedClient.id);
+              console.log("Cliente deletado com sucesso");
+              setSelectedClient(null);
+              deleteDialog.hideDialog();
+            } catch (error) {
+              console.error("Erro ao deletar cliente:", error);
+            }
+          }
+        }}
+        title="Excluir Cliente"
+        message={
+          selectedClient
+            ? `Tem certeza que deseja excluir o cliente "${selectedClient.companyName}"? Esta ação não pode ser desfeita.`
+            : "Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita."
+        }
+        variant="delete"
+        confirmText="Excluir"
+        isLoading={isDeleting}
+        disabled={isDeleting}
+      />
     </Box>
   );
 };
