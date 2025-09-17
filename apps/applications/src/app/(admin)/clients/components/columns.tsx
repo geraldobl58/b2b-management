@@ -33,7 +33,7 @@ export const columns: Column[] = [
         size="small"
         color={value ? "primary" : "default"}
         variant="filled"
-        className="w-35 text-xs font-bold"
+        className="w-35 text-xs font-bold uppercase"
       />
     ),
   },
@@ -46,17 +46,64 @@ export const columns: Column[] = [
       <Chip
         label={typeof value === "string" ? value.replace("_", " ") : ""}
         size="small"
-        color="primary"
+        color="secondary"
         variant="filled"
-        className="w-35 text-xs font-bold"
+        className="w-35 text-xs font-bold uppercase"
       />
     ),
+  },
+  {
+    id: "contracts",
+    label: "Nº Contratos",
+    minWidth: 100,
+    sortable: false,
+    renderCell: (value: unknown) => {
+      const contracts =
+        typeof value === "object" &&
+        value !== null &&
+        "contracts" in value &&
+        typeof (value as { contracts?: unknown }).contracts === "number"
+          ? (value as { contracts: number }).contracts
+          : 0;
+      return (
+        <Chip
+          label={contracts}
+          size="small"
+          color="default"
+          variant="filled"
+          className="w-10 text-xs font-bold"
+        />
+      );
+    },
+  },
+  {
+    id: "campaigns",
+    label: "Nº Campanhas",
+    minWidth: 100,
+    sortable: false,
+    renderCell: (value: unknown) => {
+      const campaigns =
+        typeof value === "object" &&
+        value !== null &&
+        "campaigns" in value &&
+        typeof (value as { campaigns?: unknown }).campaigns === "number"
+          ? (value as { campaigns: number }).campaigns
+          : 0;
+      return (
+        <Chip
+          label={campaigns}
+          size="small"
+          color="default"
+          variant="filled"
+          className="w-10 text-xs font-bold"
+        />
+      );
+    },
   },
   {
     id: "actions",
     label: "Ações",
     minWidth: 120,
-    align: "center",
     sortable: false,
     renderCell: (_value: unknown) =>
       TableHelpers.renderActions([
