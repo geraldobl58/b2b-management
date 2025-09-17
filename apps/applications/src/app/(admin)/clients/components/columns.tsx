@@ -2,8 +2,17 @@ import { Column, TableHelpers } from "@/components/common/data-table";
 
 import { Chip } from "@mui/material";
 import { Edit, Trash } from "lucide-react";
+import { Client } from "@/types/client";
 
-export const columns: Column[] = [
+interface ColumnsProps {
+  onEdit?: (client: Client) => void;
+  onDelete?: (client: Client) => void;
+}
+
+export const createColumns = ({
+  onEdit,
+  onDelete,
+}: ColumnsProps = {}): Column[] => [
   {
     id: "cnpj",
     label: "CNPJ",
@@ -105,15 +114,17 @@ export const columns: Column[] = [
     label: "Ações",
     minWidth: 120,
     sortable: false,
-    renderCell: (_value: unknown) =>
-      TableHelpers.renderActions([
+    renderCell: (value: unknown, row: Record<string, unknown>) => {
+      const client = row as unknown as Client;
+      return TableHelpers.renderActions([
         {
           icon: <Edit size={16} />,
           label: "Editar",
           color: "primary",
           onClick: () => {
-            // TODO: Implementar delete
-            console.log("Edit client");
+            if (onEdit) {
+              onEdit(client);
+            }
           },
         },
         {
@@ -121,10 +132,15 @@ export const columns: Column[] = [
           label: "Deletar",
           color: "error",
           onClick: () => {
-            // TODO: Implementar delete
-            console.log("Delete client");
+            if (onDelete) {
+              onDelete(client);
+            }
           },
         },
-      ]),
+      ]);
+    },
   },
 ];
+
+// Manter compatibilidade com código existente
+export const columns = createColumns();
