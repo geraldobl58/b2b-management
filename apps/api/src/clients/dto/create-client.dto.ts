@@ -14,11 +14,6 @@ import { TaxpayerType, PhoneType } from '@prisma/client';
 export class CreateAddressDto {
   @IsString()
   @IsNotEmpty()
-  @ApiProperty({ example: 'Sede Principal' })
-  label: string;
-
-  @IsString()
-  @IsNotEmpty()
   @Matches(/^\d{5}-?\d{3}$/, { message: 'Invalid zipcode format' })
   @ApiProperty({ example: '01234-567' })
   zipcode: string;
