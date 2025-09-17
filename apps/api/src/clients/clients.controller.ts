@@ -61,7 +61,6 @@ export class ClientsController {
         addresses: [
           {
             id: 'uuid',
-            label: 'Sede Principal',
             zipcode: '01234-567',
             street: 'Rua das Empresas',
             number: '123',
@@ -140,7 +139,6 @@ export class ClientsController {
             addresses: [
               {
                 id: 'uuid',
-                label: 'Sede Principal',
                 city: 'São Paulo',
                 state: 'SP',
                 isDefault: true,
@@ -199,7 +197,6 @@ export class ClientsController {
         addresses: [
           {
             id: 'uuid',
-            label: 'Sede Principal',
             zipcode: '01234-567',
             street: 'Rua das Empresas',
             number: '123',
