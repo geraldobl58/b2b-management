@@ -114,7 +114,6 @@ export class ClientsController {
   })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
-  @ApiQuery({ name: 'search', required: false, example: 'Empresa' })
   @ApiQuery({
     name: 'taxpayerType',
     required: false,
@@ -126,8 +125,6 @@ export class ClientsController {
       'LUCRO_REAL',
     ],
   })
-  @ApiQuery({ name: 'state', required: false, example: 'SP' })
-  @ApiQuery({ name: 'city', required: false, example: 'São Paulo' })
   @ApiResponse({
     status: 200,
     description: 'Clients retrieved successfully',
