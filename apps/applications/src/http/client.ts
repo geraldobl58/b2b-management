@@ -16,7 +16,10 @@ export const client = {
   async getClients(params?: {
     page?: number;
     limit?: number;
-    search?: string;
+    companyName?: string;
+    fantasyName?: string;
+    cnpj?: string;
+    taxpayerType?: string;
   }): Promise<ClientListResponse> {
     const response = await api.get<ClientListResponse>("/clients", { params });
     return response.data;
