@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { FormClientValues } from "@/schemas/client";
 import { client } from "@/http/client";
 import { handleApiError, ApiResponse } from "@/lib/error-handler";
@@ -9,11 +10,25 @@ import {
   CreateClientRequest,
 } from "@/types/client";
 
+// Função helper para obter o token dos cookies
+async function getTokenFromCookies(): Promise<string | undefined> {
+  const cookieStore = await cookies();
+  return cookieStore.get("access_token")?.value;
+}
+
 export async function createClientAction(
   data: FormClientValues
 ): Promise<ApiResponse<Client>> {
   try {
-    const response = await client.createClient(data);
+    const token = await getTokenFromCookies();
+    if (!token) {
+      return {
+        success: false,
+        error: "Token de autenticação não encontrado",
+      };
+    }
+
+    const response = await client.createClient(data, token);
     return {
       success: true,
       data: response.data,
@@ -30,7 +45,15 @@ export async function getClientsAction(params?: {
   search?: string;
 }): Promise<ApiResponse<ClientListResponse>> {
   try {
-    const clientData = await client.getClients(params);
+    const token = await getTokenFromCookies();
+    if (!token) {
+      return {
+        success: false,
+        error: "Token de autenticação não encontrado",
+      };
+    }
+
+    const clientData = await client.getClients(params, token);
     return {
       success: true,
       data: clientData,
@@ -45,7 +68,15 @@ export async function getClientByIdAction(
   id: string
 ): Promise<ApiResponse<Client>> {
   try {
-    const response = await client.getClientById(id);
+    const token = await getTokenFromCookies();
+    if (!token) {
+      return {
+        success: false,
+        error: "Token de autenticação não encontrado",
+      };
+    }
+
+    const response = await client.getClientById(id, token);
     return {
       success: true,
       data: response.data,
