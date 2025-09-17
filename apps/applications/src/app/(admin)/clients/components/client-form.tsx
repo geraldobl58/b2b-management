@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm, Controller, useFieldArray } from "react-hook-form";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formClientSchema, FormClientValues } from "@/schemas/client";
 import {
@@ -28,6 +28,9 @@ interface ClientFormProps {
 
 export const ClientForm = ({ onSuccess }: ClientFormProps) => {
   const { createClient, isLoading, createClientError } = useClient();
+
+  // Track previous loading state to detect completion
+  const prevIsLoadingRef = useRef(false);
 
   const {
     handleSubmit,
@@ -60,6 +63,17 @@ export const ClientForm = ({ onSuccess }: ClientFormProps) => {
       ],
     },
   });
+
+  // Handle success callback
+  useEffect(() => {
+    // Check if we just finished loading (was loading, now not loading) and no error
+    if (onSuccess && prevIsLoadingRef.current && !isLoading && !createClientError) {
+      onSuccess();
+    }
+
+    // Update previous loading state
+    prevIsLoadingRef.current = isLoading;
+  }, [onSuccess, isLoading, createClientError]);
 
   const {
     fields: phoneFields,
@@ -283,10 +297,15 @@ export const ClientForm = ({ onSuccess }: ClientFormProps) => {
           </Box>
 
           {createClientError && (
-            <Box className="mb-4">
-              <Typography color="error" variant="body2">
+            <Box className="mb-4 p-3 border border-red-300 rounded-md bg-red-50">
+              <Typography color="error" variant="body2" className="font-medium">
                 {createClientError}
               </Typography>
+              {createClientError.includes("CNPJ") && (
+                <Typography variant="caption" color="error" className="mt-1 block">
+                  Verifique se o CNPJ está correto ou se já não existe um cliente cadastrado com este CNPJ.
+                </Typography>
+              )}
             </Box>
           )}
 

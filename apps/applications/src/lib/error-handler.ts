@@ -16,46 +16,50 @@ export function handleApiError(error: unknown): ApiErrorResponse {
   if (error && typeof error === "object" && "response" in error) {
     const axiosError = error as AxiosError;
 
+    // Try to extract specific error message from response
+    const responseData = axiosError.response?.data as { message?: string; error?: string } | undefined;
+    const specificMessage = responseData?.message || responseData?.error;
+
     switch (axiosError.response?.status) {
       case 400:
         return {
           success: false,
-          error: "Dados inválidos fornecidos",
+          error: specificMessage || "Dados inválidos fornecidos",
         };
       case 401:
         return {
           success: false,
-          error: "Token inválido ou expirado",
+          error: specificMessage || "Token inválido ou expirado",
         };
       case 403:
         return {
           success: false,
-          error: "Acesso negado",
+          error: specificMessage || "Acesso negado",
         };
       case 404:
         return {
           success: false,
-          error: "Recurso não encontrado",
+          error: specificMessage || "Recurso não encontrado",
         };
       case 409:
         return {
           success: false,
-          error: "Conflito de dados",
+          error: specificMessage || "Já existe um cliente com esses dados (CNPJ pode estar duplicado)",
         };
       case 422:
         return {
           success: false,
-          error: "Dados não processáveis",
+          error: specificMessage || "Dados não processáveis",
         };
       case 500:
         return {
           success: false,
-          error: "Erro interno do servidor",
+          error: specificMessage || "Erro interno do servidor",
         };
       default:
         return {
           success: false,
-          error: `Erro do servidor: ${axiosError.response?.status || "Desconhecido"}`,
+          error: specificMessage || `Erro do servidor: ${axiosError.response?.status || "Desconhecido"}`,
         };
     }
   }

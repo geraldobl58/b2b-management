@@ -18,7 +18,7 @@ const NewClientPage = () => {
         title="Novo Cliente"
         description="Cadastre um novo cliente preenchendo as informações abaixo."
       />
-      <ClientForm mode="create" onSuccess={handleSuccess} />
+      <ClientForm onSuccess={handleSuccess} />
     </Box>
   );
 };
