@@ -66,30 +66,32 @@ export class ClientsService {
   }
 
   async findAll(query: QueryClientDto) {
-    const { page = 1, limit = 10, search, taxpayerType, state, city } = query;
+    const {
+      page = 1,
+      limit = 10,
+      companyName,
+      fantasyName,
+      cnpj,
+      taxpayerType,
+    } = query;
     const skip = (page - 1) * limit;
 
     const where: any = {};
 
-    if (search) {
-      where.OR = [
-        { companyName: { contains: search, mode: 'insensitive' } },
-        { fantasyName: { contains: search, mode: 'insensitive' } },
-        { cnpj: { contains: search } },
-      ];
+    if (companyName) {
+      where.companyName = { contains: companyName, mode: 'insensitive' };
+    }
+
+    if (fantasyName) {
+      where.fantasyName = { contains: fantasyName, mode: 'insensitive' };
+    }
+
+    if (cnpj) {
+      where.cnpj = { contains: cnpj };
     }
 
     if (taxpayerType) {
       where.taxpayerType = taxpayerType;
-    }
-
-    if (state || city) {
-      where.addresses = {
-        some: {
-          ...(state && { state: { contains: state, mode: 'insensitive' } }),
-          ...(city && { city: { contains: city, mode: 'insensitive' } }),
-        },
-      };
     }
 
     const [clients, total] = await Promise.all([
