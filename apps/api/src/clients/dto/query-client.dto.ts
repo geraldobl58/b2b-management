@@ -23,10 +23,26 @@ export class QueryClientDto {
   @IsOptional()
   @IsString()
   @ApiPropertyOptional({
-    example: 'Empresa',
-    description: 'Search by company or fantasy name',
+    example: 'Empresa LTDA',
+    description: 'Filter by company name',
   })
-  search?: string;
+  companyName?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional({
+    example: 'Empresa Corp',
+    description: 'Filter by fantasy name',
+  })
+  fantasyName?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional({
+    example: '12.345.678/0001-90',
+    description: 'Filter by CNPJ',
+  })
+  cnpj?: string;
 
   @IsOptional()
   @IsEnum(TaxpayerType)
@@ -35,14 +51,4 @@ export class QueryClientDto {
     description: 'Filter by taxpayer type',
   })
   taxpayerType?: TaxpayerType;
-
-  @IsOptional()
-  @IsString()
-  @ApiPropertyOptional({ example: 'SP', description: 'Filter by state' })
-  state?: string;
-
-  @IsOptional()
-  @IsString()
-  @ApiPropertyOptional({ example: 'São Paulo', description: 'Filter by city' })
-  city?: string;
 }
