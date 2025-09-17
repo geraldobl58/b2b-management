@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { client } from "@/http/client";
 import { cookieUtils } from "@/lib/cookies";
-import { createClientAction } from "@/actions/client";
+import { createClientAction, deleteClientAction } from "@/actions/client";
 import { FormClientValues } from "@/schemas/client";
 import { SearchClientValues } from "@/schemas/search-client";
 import { useCallback, useState, useMemo } from "react";
@@ -184,6 +184,22 @@ export const useClient = (initialParams?: UseClientParams) => {
     },
   });
 
+  const deleteClientMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const result = await deleteClientAction(id);
+      if (!result.success) {
+        throw new Error(result.error || "Erro ao deletar cliente");
+      }
+      return result.data!;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+
   return {
     // Client list data
     clients: clientResponse?.data || [],
@@ -228,5 +244,10 @@ export const useClient = (initialParams?: UseClientParams) => {
     isLoading: clientMutation.isPending,
     createClient: clientMutation.mutate,
     createClientError: clientMutation.error?.message,
+
+    // Delete client
+    isDeleting: deleteClientMutation.isPending,
+    deleteClient: deleteClientMutation.mutateAsync,
+    deleteClientError: deleteClientMutation.error?.message,
   };
 };
