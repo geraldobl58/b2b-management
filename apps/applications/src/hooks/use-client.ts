@@ -4,7 +4,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { client } from "@/http/client";
 import { cookieUtils } from "@/lib/cookies";
-import { createClientAction, deleteClientAction } from "@/actions/client";
+import {
+  createClientAction,
+  deleteClientAction,
+  updateClientAction,
+} from "@/actions/client";
 import { FormClientValues } from "@/schemas/client";
 import { SearchClientValues } from "@/schemas/search-client";
 import { useCallback, useState, useMemo } from "react";
@@ -180,7 +184,6 @@ export const useClient = (initialParams?: UseClientParams) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
-      router.push("/clients");
     },
   });
 
@@ -197,6 +200,25 @@ export const useClient = (initialParams?: UseClientParams) => {
     },
     onError: (error) => {
       console.log(error);
+    },
+  });
+
+  const updateClientMutation = useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: FormClientValues;
+    }) => {
+      const result = await updateClientAction(id, data);
+      if (!result.success) {
+        throw new Error(result.error || "Erro ao atualizar cliente");
+      }
+      return result.data!;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
     },
   });
 
@@ -244,6 +266,11 @@ export const useClient = (initialParams?: UseClientParams) => {
     isLoading: clientMutation.isPending,
     createClient: clientMutation.mutate,
     createClientError: clientMutation.error?.message,
+
+    // Update client
+    isUpdating: updateClientMutation.isPending,
+    updateClient: updateClientMutation.mutate,
+    updateClientError: updateClientMutation.error?.message,
 
     // Delete client
     isDeleting: deleteClientMutation.isPending,

@@ -4,11 +4,7 @@ import { cookies } from "next/headers";
 import { FormClientValues } from "@/schemas/client";
 import { client } from "@/http/client";
 import { handleApiError, ApiResponse } from "@/lib/error-handler";
-import {
-  Client,
-  ClientListResponse,
-  CreateClientRequest,
-} from "@/types/client";
+import { Client, ClientListResponse } from "@/types/client";
 
 // Função helper para obter o token dos cookies
 async function getTokenFromCookies(): Promise<string | undefined> {
@@ -86,10 +82,9 @@ export async function getClientByIdAction(
     return handleApiError(error);
   }
 }
-
 export async function updateClientAction(
   id: string,
-  data: Partial<CreateClientRequest>
+  data: FormClientValues
 ): Promise<ApiResponse<Client>> {
   try {
     const token = await getTokenFromCookies();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm, Controller, useFieldArray } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formClientSchema, FormClientValues } from "@/schemas/client";
 import {
@@ -22,7 +22,11 @@ import { PhoneForm } from "./phone-form";
 import { AddressForm } from "./address-form";
 import { useClient } from "@/hooks/use-client";
 
-export const ClientForm = () => {
+interface ClientFormProps {
+  onSuccess?: () => void;
+}
+
+export const ClientForm = ({ onSuccess }: ClientFormProps) => {
   const { createClient, isLoading, createClientError } = useClient();
 
   const {
@@ -74,26 +78,30 @@ export const ClientForm = () => {
   >({});
 
   const handleCancel = () => {
-    reset({
-      cnpj: "",
-      companyName: "",
-      fantasyName: "",
-      taxpayerType: "SIMPLES_NACIONAL",
-      stateRegistration: "",
-      typeRelationship: "",
-      phones: [{ type: "LANDLINE", number: "" }],
-      addresses: [
-        {
-          zipcode: "",
-          street: "",
-          number: "",
-          complement: "",
-          district: "",
-          city: "",
-          state: "",
-        },
-      ],
-    });
+    if (onSuccess) {
+      onSuccess();
+    } else {
+      reset({
+        cnpj: "",
+        companyName: "",
+        fantasyName: "",
+        taxpayerType: "SIMPLES_NACIONAL",
+        stateRegistration: "",
+        typeRelationship: "",
+        phones: [{ type: "LANDLINE", number: "" }],
+        addresses: [
+          {
+            zipcode: "",
+            street: "",
+            number: "",
+            complement: "",
+            district: "",
+            city: "",
+            state: "",
+          },
+        ],
+      });
+    }
   };
 
   const onSubmit = (data: FormClientValues) => {

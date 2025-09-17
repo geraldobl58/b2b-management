@@ -65,7 +65,7 @@ const ClientsPage = () => {
     confirmText: "Excluir",
   });
 
-  const handleEditClient = (client: Client) => {
+  const handleEditClient: (client: Client) => void = (client: Client) => {
     router.push(`/clients/${client.id}`);
   };
 

@@ -1,7 +1,6 @@
 import api, { createApiWithToken } from "@/lib/api";
 import { FormClientValues } from "@/schemas/client";
 import {
-  CreateClientRequest,
   CreateClientResponse,
   ClientListResponse,
   Client,
@@ -54,7 +53,7 @@ export const client = {
 
   async updateClient(
     id: string,
-    data: Partial<CreateClientRequest>,
+    data: FormClientValues,
     token?: string
   ): Promise<{ data: Client }> {
     const apiInstance = getApiInstance(token);
