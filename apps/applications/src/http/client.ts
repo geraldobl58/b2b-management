@@ -1,4 +1,4 @@
-import api from "@/lib/api";
+import api, { createApiWithToken } from "@/lib/api";
 import { FormClientValues } from "@/schemas/client";
 import {
   CreateClientRequest,
@@ -7,39 +7,72 @@ import {
   Client,
 } from "@/types/client";
 
+// Função para obter a instância da API correta baseada no token
+const getApiInstance = (token?: string) => {
+  if (token) {
+    return createApiWithToken(token);
+  }
+  return api; // Usa a instância padrão com interceptor para client-side
+};
+
 export const client = {
-  async createClient(data: FormClientValues): Promise<CreateClientResponse> {
-    const response = await api.post<CreateClientResponse>("/clients", data);
+  async createClient(
+    data: FormClientValues,
+    token?: string
+  ): Promise<CreateClientResponse> {
+    const apiInstance = getApiInstance(token);
+    const response = await apiInstance.post<CreateClientResponse>(
+      "/clients",
+      data
+    );
     return response.data;
   },
 
-  async getClients(params?: {
-    page?: number;
-    limit?: number;
-    companyName?: string;
-    fantasyName?: string;
-    cnpj?: string;
-    taxpayerType?: string;
-  }): Promise<ClientListResponse> {
-    const response = await api.get<ClientListResponse>("/clients", { params });
+  async getClients(
+    params?: {
+      page?: number;
+      limit?: number;
+      companyName?: string;
+      fantasyName?: string;
+      cnpj?: string;
+      taxpayerType?: string;
+    },
+    token?: string
+  ): Promise<ClientListResponse> {
+    const apiInstance = getApiInstance(token);
+    const response = await apiInstance.get<ClientListResponse>("/clients", {
+      params,
+    });
     return response.data;
   },
 
-  async getClientById(id: string): Promise<{ data: Client }> {
-    const response = await api.get<{ data: Client }>(`/clients/${id}`);
+  async getClientById(id: string, token?: string): Promise<{ data: Client }> {
+    const apiInstance = getApiInstance(token);
+    const response = await apiInstance.get<{ data: Client }>(`/clients/${id}`);
     return response.data;
   },
 
   async updateClient(
     id: string,
-    data: Partial<CreateClientRequest>
+    data: Partial<CreateClientRequest>,
+    token?: string
   ): Promise<{ data: Client }> {
-    const response = await api.put<{ data: Client }>(`/clients/${id}`, data);
+    const apiInstance = getApiInstance(token);
+    const response = await apiInstance.put<{ data: Client }>(
+      `/clients/${id}`,
+      data
+    );
     return response.data;
   },
 
-  async deleteClient(id: string): Promise<{ success: boolean }> {
-    const response = await api.delete<{ success: boolean }>(`/clients/${id}`);
+  async deleteClient(
+    id: string,
+    token?: string
+  ): Promise<{ success: boolean }> {
+    const apiInstance = getApiInstance(token);
+    const response = await apiInstance.delete<{ success: boolean }>(
+      `/clients/${id}`
+    );
     return response.data;
   },
 };
