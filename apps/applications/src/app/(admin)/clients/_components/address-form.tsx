@@ -9,8 +9,8 @@ import {
   UseFormClearErrors,
 } from "react-hook-form";
 import { TextField } from "@mui/material";
-import { FormClientValues } from "@/schemas/client";
-import { CepInput } from "./cep-input";
+import { FormClientValues } from "@/features/clients/schemas/client";
+import { CepInput } from "@/app/(admin)/clients/_components/cep-input";
 
 interface AddressFormProps {
   index: number;

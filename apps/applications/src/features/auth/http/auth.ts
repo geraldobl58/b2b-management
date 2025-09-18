@@ -1,15 +1,9 @@
-import api from "@/lib/api";
+import api from "@/config/api";
 import { FormAuthValues } from "../schemas/auth";
+import { User } from "../types/auth";
 
 export interface LoginResponse {
   access_token: string;
-}
-
-export interface User {
-  userId: string;
-  name: string;
-  email: string;
-  role: string;
 }
 
 export const authentication = {

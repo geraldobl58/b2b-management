@@ -1,6 +1,6 @@
 "use server";
 
-import { authentication } from "@/http/auth";
+import { authentication } from "../http/auth";
 import { FormAuthValues } from "../schemas/auth";
 
 export interface LoginResult {

@@ -1,10 +1,10 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { FormClientValues } from "@/schemas/client";
-import { client } from "@/http/client";
-import { handleApiError, ApiResponse } from "@/lib/error-handler";
-import { Client, ClientListResponse } from "@/types/client";
+import { FormClientValues } from "@/features/clients/schemas/client";
+import { client } from "@/features/clients/http/client";
+import { handleApiError, ApiResponse } from "@/config/error-handler";
+import { Client, ClientListResponse } from "@/features/clients/types/client";
 
 // Função helper para obter o token dos cookies
 async function getTokenFromCookies(): Promise<string | undefined> {

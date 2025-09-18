@@ -1,8 +1,9 @@
 import axios from "axios";
-import { cookieUtils } from "./cookies";
+import { cookieUtils } from "@/lib/cookies";
+import { env } from "./env";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333",
+  baseURL: env.BASE_API_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -43,7 +44,7 @@ api.interceptors.response.use(
 // Função para fazer requisições com token manual (útil para server actions)
 export const createApiWithToken = (token: string) => {
   return axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333",
+    baseURL: env.BASE_API_URL,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,

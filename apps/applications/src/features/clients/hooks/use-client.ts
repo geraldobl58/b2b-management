@@ -2,15 +2,15 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { client } from "@/http/client";
+import { client } from "@/features/clients/http/client";
 import { cookieUtils } from "@/lib/cookies";
 import {
   createClientAction,
   deleteClientAction,
   updateClientAction,
-} from "@/actions/client";
-import { FormClientValues } from "@/schemas/client";
-import { SearchClientValues } from "@/schemas/search-client";
+} from "@/features/clients/actions/client";
+import { FormClientValues } from "@/features/clients/schemas/client";
+import { SearchClientValues } from "@/features/clients/schemas/search-client";
 import { useCallback, useState, useMemo } from "react";
 
 interface UseClientParams {

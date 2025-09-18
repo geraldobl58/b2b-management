@@ -8,11 +8,11 @@ import { useState } from "react";
 
 import { DataTable } from "@/components/common/data-table";
 import { Header } from "@/components/header";
-import { useClient } from "@/hooks/use-client";
+import { useClient } from "@/features/clients/hooks/use-client";
 import {
   searchClientSchema,
   SearchClientValues,
-} from "@/schemas/search-client";
+} from "@/features/clients/schemas/search-client";
 import {
   Box,
   Button,
@@ -25,9 +25,9 @@ import {
   Paper,
   Stack,
 } from "@mui/material";
-import { createColumns } from "./components/columns";
+import { createColumns } from "./_components/columns";
 import { cnpjMask } from "@/lib/masks";
-import { Client } from "@/types/client";
+import { Client } from "@/features/clients/types/client";
 import {
   ConfirmationDialog,
   useConfirmationDialog,

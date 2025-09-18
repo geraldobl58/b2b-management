@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Box } from "@mui/material";
 import { Header } from "@/components/header";
-import { ClientForm } from "../components/client-form";
+import { ClientForm } from "../_components/client-form";
 
 const NewClientPage = () => {
   const router = useRouter();

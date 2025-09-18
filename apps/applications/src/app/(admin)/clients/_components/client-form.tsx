@@ -3,7 +3,10 @@
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { useState, useEffect, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { formClientSchema, FormClientValues } from "@/schemas/client";
+import {
+  formClientSchema,
+  FormClientValues,
+} from "@/features/clients/schemas/client";
 import {
   Box,
   Button,
@@ -20,7 +23,7 @@ import {
 import { cnpjMask } from "@/lib/masks";
 import { PhoneForm } from "./phone-form";
 import { AddressForm } from "./address-form";
-import { useClient, useClientById } from "@/hooks/use-client";
+import { useClient, useClientById } from "@/features/clients/hooks/use-client";
 
 interface ClientFormProps {
   onSuccess?: () => void;

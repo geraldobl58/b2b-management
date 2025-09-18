@@ -18,7 +18,7 @@ import {
   Typography,
 } from "@mui/material";
 
-import { formAuthSchema, FormAuthValues } from "@/schemas/auth";
+import { formAuthSchema, FormAuthValues } from "@/features/auth/schemas/auth";
 import { useAuth } from "@/hooks/use-auth";
 
 export const AuthForm = () => {

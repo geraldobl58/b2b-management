@@ -1,10 +1,10 @@
-import api, { createApiWithToken } from "@/lib/api";
-import { FormClientValues } from "@/schemas/client";
+import api, { createApiWithToken } from "@/config/api";
+import { FormClientValues } from "@/features/clients/schemas/client";
 import {
   CreateClientResponse,
   ClientListResponse,
   Client,
-} from "@/types/client";
+} from "@/features/clients/types/client";
 
 // Função para obter a instância da API correta baseada no token
 const getApiInstance = (token?: string) => {

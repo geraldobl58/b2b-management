@@ -4,10 +4,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { cookieUtils } from "@/lib/cookies";
-
-import { loginAction } from "../actions/auth";
+import { authentication } from "../http/auth";
 import { FormAuthValues } from "../schemas/auth";
-import { authentication } from "@/http/auth";
+import { loginAction } from "../actions/auth";
 
 export const useAuth = () => {
   const router = useRouter();

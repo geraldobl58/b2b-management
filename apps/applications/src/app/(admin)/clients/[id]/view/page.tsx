@@ -14,9 +14,9 @@ import {
 } from "@mui/material";
 import { ArrowBack, Edit } from "@mui/icons-material";
 import { Header } from "@/components/header";
-import { useClientById } from "@/hooks/use-client";
+import { useClientById } from "@/features/clients/hooks/use-client";
 import { useMounted } from "@/hooks/use-mounted";
-import { Phone, Address } from "@/types/client";
+import { Phone, Address } from "@/features/clients/types/client";
 
 interface ClientViewPageProps {
   params: Promise<{

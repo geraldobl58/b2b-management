@@ -11,7 +11,7 @@ import {
 import type { FieldPath, Path } from "react-hook-form";
 import { TextField } from "@mui/material";
 import { cepMask } from "@/lib/masks";
-import { FormClientValues } from "@/schemas/client";
+import { FormClientValues } from "@/features/clients/schemas/client";
 
 interface CepInputProps {
   name: FieldPath<FormClientValues>;

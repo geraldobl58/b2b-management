@@ -1,14 +1,17 @@
 "use client";
 
+import { IconButton } from "@mui/material";
+import { StyledDrawer } from "@/theme/styles";
+
+import { LogOut } from "lucide-react";
+
+import { useAuth } from "@/features/auth/hooks/use-auth";
+
 import { DrawerHeader } from "./drawer-header";
 import { sidebarMenu } from "../navigation/menu";
 import { MenuItem } from "../navigation/types";
 import { SidebarNavigation } from "../navigation/sidebar-navigation";
 import { Logo } from "../logo";
-import { useAuth } from "@/hooks/use-auth";
-import { IconButton } from "@mui/material";
-import { LogOut } from "lucide-react";
-import { StyledDrawer } from "@/theme/styles";
 
 interface SidebarProps {
   open: boolean;

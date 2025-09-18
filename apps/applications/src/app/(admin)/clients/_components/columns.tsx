@@ -2,7 +2,7 @@ import { Column, TableHelpers } from "@/components/common/data-table";
 
 import { Chip } from "@mui/material";
 import { Edit, Eye, Trash } from "lucide-react";
-import { Client } from "@/types/client";
+import { Client } from "@/features/clients/types/client";
 
 interface ColumnsProps {
   onView?: (client: Client) => void;
