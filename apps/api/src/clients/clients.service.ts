@@ -168,8 +168,7 @@ export class ClientsService {
         contracts: {
           select: {
             id: true,
-            code: true,
-            brand: true,
+            name: true,
             partner: true,
             startDate: true,
             endDate: true,
