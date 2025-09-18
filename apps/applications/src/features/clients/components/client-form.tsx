@@ -21,9 +21,9 @@ import {
   Typography,
 } from "@mui/material";
 import { cnpjMask } from "@/lib/masks";
+import { useClient, useClientById } from "@/features/clients/hooks/use-client";
 import { PhoneForm } from "./phone-form";
 import { AddressForm } from "./address-form";
-import { useClient, useClientById } from "@/features/clients/hooks/use-client";
 
 interface ClientFormProps {
   onSuccess?: () => void;

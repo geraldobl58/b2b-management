@@ -25,7 +25,7 @@ import {
   Paper,
   Stack,
 } from "@mui/material";
-import { createColumns } from "./_components/columns";
+import { createColumns } from "../../../features/clients/components/columns";
 import { cnpjMask } from "@/lib/masks";
 import { Client } from "@/features/clients/types/client";
 import {

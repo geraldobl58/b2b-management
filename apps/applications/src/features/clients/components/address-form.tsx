@@ -10,7 +10,7 @@ import {
 } from "react-hook-form";
 import { TextField } from "@mui/material";
 import { FormClientValues } from "@/features/clients/schemas/client";
-import { CepInput } from "@/app/(admin)/clients/_components/cep-input";
+import { CepInput } from "@/features/clients/components/cep-input";
 
 interface AddressFormProps {
   index: number;

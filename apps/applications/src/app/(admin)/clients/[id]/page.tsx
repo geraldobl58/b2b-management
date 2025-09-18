@@ -4,7 +4,7 @@ import React, { use } from "react";
 import { useRouter } from "next/navigation";
 import { Box, CircularProgress } from "@mui/material";
 import { Header } from "@/components/header";
-import { ClientForm } from "../_components/client-form";
+import { ClientForm } from "../../../../features/clients/components/client-form";
 import { useClientById } from "@/features/clients/hooks/use-client";
 
 interface ClientIdPageProps {
