@@ -292,7 +292,7 @@ const ClientsPage = () => {
             emptyMessage="Nenhum cliente encontrado"
             // Layout
             maxHeight={700}
-            dense={false}
+            dense={true}
           />
         </div>
       </Paper>
