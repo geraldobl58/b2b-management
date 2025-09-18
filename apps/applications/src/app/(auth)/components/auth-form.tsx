@@ -19,7 +19,7 @@ import {
 } from "@mui/material";
 
 import { formAuthSchema, FormAuthValues } from "@/features/auth/schemas/auth";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/features/auth/hooks/use-auth";
 
 export const AuthForm = () => {
   const [showPassword, setShowPassword] = useState(false);
