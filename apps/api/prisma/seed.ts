@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { PrismaClient, Role, TaxpayerType, PhoneType } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcrypt';
@@ -9,7 +8,9 @@ const prisma = new PrismaClient();
 // Helper to generate Brazilian CNPJ
 function generateCNPJ(): string {
   // Generate unique 8-digit number
-  const digits = Array.from({ length: 8 }, () => faker.number.int({ min: 0, max: 9 }));
+  const digits = Array.from({ length: 8 }, () =>
+    faker.number.int({ min: 0, max: 9 }),
+  );
   const branch = faker.string.numeric(4); // Make branch random too
   const base = digits.join('') + branch;
 
@@ -72,7 +73,10 @@ function generateZipcode(): string {
 async function main() {
   console.log('🌱 Starting seed with faker data...');
 
-  // Clear existing clients first
+  // Clear existing data in proper order (contracts first due to foreign keys)
+  await prisma.contract.deleteMany();
+  console.log('🗑️ Cleared existing contracts');
+
   await prisma.client.deleteMany();
   console.log('🗑️ Cleared existing clients');
 
@@ -127,8 +131,8 @@ async function main() {
   const createdClients: any[] = [];
   const usedCNPJs = new Set<string>();
 
-  // Create 15 fake clients
-  for (let i = 0; i < 15; i++) {
+  // Create 50 fake clients
+  for (let i = 0; i < 50; i++) {
     let cnpj = generateCNPJ();
     // Ensure unique CNPJ
     while (usedCNPJs.has(cnpj)) {
@@ -199,9 +203,90 @@ async function main() {
       });
 
       createdClients.push(client);
+      console.log(`✓ Created client ${i + 1}: ${companyName}`);
     } catch (error) {
       console.warn(
-        `Failed to create client ${i + 1}: CNPJ collision, skipping...`,
+        `Failed to create client ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+
+  // Create contracts for some of the clients
+  const createdContracts: any[] = [];
+  console.log('\n📋 Creating contracts...');
+
+  // Create 20-30 contracts for random clients
+  const contractCount = faker.number.int({ min: 20, max: 30 });
+
+  for (let i = 0; i < contractCount; i++) {
+    const randomClient = faker.helpers.arrayElement(createdClients);
+    const creator = faker.helpers.arrayElement(users);
+
+    // Generate contract dates (start date in the past or near future, end date later)
+    const startDate = faker.date.between({
+      from: new Date('2023-01-01'),
+      to: new Date('2025-12-31'),
+    });
+
+    const endDate = faker.date.between({
+      from: startDate,
+      to: new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000 * 2), // 2 years from start
+    });
+
+    const contractNames = [
+      'Contrato de Marketing Digital',
+      'Acordo de Parceria Comercial',
+      'Contrato de Fornecimento',
+      'Acordo de Distribuição',
+      'Contrato de Serviços',
+      'Parceria Estratégica',
+      'Contrato de Vendas',
+      'Acordo de Colaboração',
+      'Contrato de Publicidade',
+      'Acordo de Representação',
+    ];
+
+    const partnerNames = [
+      'Google Brasil',
+      'Meta Publicidade',
+      'Amazon Web Services',
+      'Microsoft Brasil',
+      'Salesforce',
+      'HubSpot',
+      'Adobe Brasil',
+      'Oracle',
+      'SAP Brasil',
+      'IBM Brasil',
+    ];
+
+    try {
+      const contract = await prisma.contract.create({
+        data: {
+          name: `${faker.helpers.arrayElement(contractNames)} ${faker.number.int({ min: 1000, max: 9999 })}`,
+          partner: faker.helpers.arrayElement(partnerNames),
+          startDate,
+          endDate,
+          clientId: randomClient.id,
+          createdById: creator.id,
+        },
+        include: {
+          client: {
+            select: {
+              companyName: true,
+              fantasyName: true,
+            },
+          },
+        },
+      });
+
+      createdContracts.push(contract);
+      console.log(
+        `✓ Created contract ${i + 1}: ${contract.name} for ${contract.client.companyName}`,
+      );
+    } catch (error) {
+      console.warn(
+        `Failed to create contract ${i + 1}:`,
+        error instanceof Error ? error.message : 'Unknown error',
       );
     }
   }
@@ -227,6 +312,12 @@ async function main() {
   );
   console.log('- Multiple addresses and phone numbers per client');
   console.log('- Realistic CNPJs, phone numbers, and addresses');
+
+  console.log('\n📋 Created contracts:');
+  console.log(`- Generated ${createdContracts.length} contracts`);
+  console.log('- Random assignment to clients');
+  console.log('- Realistic contract names and partner companies');
+  console.log('- Valid date ranges (start and end dates)');
 }
 
 main()
