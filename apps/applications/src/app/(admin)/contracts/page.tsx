@@ -100,25 +100,14 @@ const ContractPage = () => {
   };
 
   const handleContractSubmit = async (data: FormContractValues) => {
-    console.log("handleContractSubmit called with:", data);
-    console.log("editingContract:", editingContract);
     try {
       if (editingContract) {
-        // Update existing contract
-        console.log(
-          "Attempting to update contract with ID:",
-          editingContract.id
-        );
-        const result = await updateContract({
+        await updateContract({
           id: editingContract.id,
           data,
         });
-        console.log("Update result:", result);
       } else {
-        // Create new contract
-        console.log("Attempting to create new contract");
-        const result = await createContract(data);
-        console.log("Create result:", result);
+        await createContract(data);
       }
       console.log("Contract operation completed successfully");
     } catch (error) {
@@ -293,63 +282,31 @@ const ContractPage = () => {
                           fullWidth: true,
                           error: !!errors.startDate,
                           helperText: errors.startDate?.message,
+                          sx: {
+                            "& .MuiInputBase-root": {
+                              borderRadius: "12px",
+                              backgroundColor: "#f9f9f9",
+                            },
+                            "& input": {
+                              fontSize: "14px",
+                            },
+                          },
                         },
                         popper: {
                           sx: {
-                            zIndex: 9999,
                             "& .MuiPaper-root": {
-                              backgroundColor: "background.paper",
-                              border: "1px solid",
-                              borderColor: "divider",
-                              borderRadius: 2,
-                              boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
-                              overflow: "hidden",
-                            },
-                            "& .MuiPickersCalendarHeader-root": {
-                              backgroundColor: "primary.main",
-                              color: "primary.contrastText",
-                              padding: "16px",
-                            },
-                            "& .MuiPickersCalendarHeader-label": {
-                              color: "primary.contrastText",
-                              fontWeight: "bold",
-                            },
-                            "& .MuiPickersArrowSwitcher-root": {
-                              "& .MuiIconButton-root": {
-                                color: "primary.contrastText",
-                              },
-                            },
-                            "& .MuiDayCalendar-header": {
-                              backgroundColor: "grey.50",
-                            },
-                            "& .MuiDayCalendar-weekDayLabel": {
-                              backgroundColor: "grey.100",
-                              color: "text.primary",
-                              fontWeight: "bold",
-                              fontSize: "0.875rem",
+                              borderRadius: "16px",
+                              boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
                             },
                             "& .MuiPickersDay-root": {
-                              color: "text.primary",
-                              fontSize: "0.875rem",
-                              "&:hover": {
-                                backgroundColor: "primary.light",
-                                color: "primary.contrastText",
-                              },
+                              fontWeight: "500",
                               "&.Mui-selected": {
-                                backgroundColor: "primary.main",
-                                color: "primary.contrastText",
-                                fontWeight: "bold",
-                                "&:hover": {
-                                  backgroundColor: "primary.dark",
-                                },
+                                backgroundColor: "#1976d2",
+                                color: "#fff",
                               },
-                              "&.MuiPickersDay-today": {
-                                border: "2px solid",
-                                borderColor: "primary.main",
+                              "&:hover": {
+                                backgroundColor: "#e3f2fd",
                               },
-                            },
-                            "& .MuiPickersDay-dayOutsideMonth": {
-                              color: "text.disabled",
                             },
                           },
                         },
@@ -381,65 +338,6 @@ const ContractPage = () => {
                           fullWidth: true,
                           error: !!errors.endDate,
                           helperText: errors.endDate?.message,
-                        },
-                        popper: {
-                          sx: {
-                            zIndex: 9999,
-                            "& .MuiPaper-root": {
-                              backgroundColor: "background.paper",
-                              border: "1px solid",
-                              borderColor: "divider",
-                              borderRadius: 2,
-                              boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
-                              overflow: "hidden",
-                            },
-                            "& .MuiPickersCalendarHeader-root": {
-                              backgroundColor: "primary.main",
-                              color: "primary.contrastText",
-                              padding: "16px",
-                            },
-                            "& .MuiPickersCalendarHeader-label": {
-                              color: "primary.contrastText",
-                              fontWeight: "bold",
-                            },
-                            "& .MuiPickersArrowSwitcher-root": {
-                              "& .MuiIconButton-root": {
-                                color: "primary.contrastText",
-                              },
-                            },
-                            "& .MuiDayCalendar-header": {
-                              backgroundColor: "grey.50",
-                            },
-                            "& .MuiDayCalendar-weekDayLabel": {
-                              backgroundColor: "grey.100",
-                              color: "text.primary",
-                              fontWeight: "bold",
-                              fontSize: "0.875rem",
-                            },
-                            "& .MuiPickersDay-root": {
-                              color: "text.primary",
-                              fontSize: "0.875rem",
-                              "&:hover": {
-                                backgroundColor: "primary.light",
-                                color: "primary.contrastText",
-                              },
-                              "&.Mui-selected": {
-                                backgroundColor: "primary.main",
-                                color: "primary.contrastText",
-                                fontWeight: "bold",
-                                "&:hover": {
-                                  backgroundColor: "primary.dark",
-                                },
-                              },
-                              "&.MuiPickersDay-today": {
-                                border: "2px solid",
-                                borderColor: "primary.main",
-                              },
-                            },
-                            "& .MuiPickersDay-dayOutsideMonth": {
-                              color: "text.disabled",
-                            },
-                          },
                         },
                       }}
                     />

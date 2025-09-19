@@ -93,7 +93,6 @@ export const ContractForm = forwardRef<ContractFormRef, ContractFormProps>(
     const startDate = watch("startDate"); // Reset form when contract data loads (edit mode)
     useEffect(() => {
       if (mode === "edit" && contractData && contractId) {
-        console.log("Contract data received:", contractData);
         const resetData = {
           clientId: contractData.clientId || "",
           name: contractData.name || "",
@@ -105,7 +104,6 @@ export const ContractForm = forwardRef<ContractFormRef, ContractFormProps>(
             ? new Date(contractData.endDate)
             : new Date(),
         };
-        console.log("Resetting form with:", resetData);
         reset(resetData);
       } else if (mode === "create") {
         // Reset to default values for create mode
@@ -128,26 +126,19 @@ export const ContractForm = forwardRef<ContractFormRef, ContractFormProps>(
           setSubmitError(null);
 
           if (onSubmit) {
-            console.log("Using external onSubmit handler");
-            // Use external onSubmit handler (for FormDialog integration)
             await onSubmit(data);
-            console.log("External onSubmit completed");
             onSuccess?.();
           } else {
-            console.log("Using internal logic");
             // Fallback to internal logic
             if (mode === "create") {
-              console.log("Creating contract");
               await createContract(data);
             } else if (mode === "edit" && contractId) {
-              console.log("Updating contract with id:", contractId);
               await updateContract({ id: contractId, data });
             }
             onSuccess?.();
           }
           console.log("Form submission completed successfully");
         } catch (error) {
-          console.error("Error submitting form:", error);
           setSubmitError(
             error instanceof Error ? error.message : "Erro desconhecido"
           );
@@ -161,7 +152,6 @@ export const ContractForm = forwardRef<ContractFormRef, ContractFormProps>(
       ref,
       () => ({
         submit: async () => {
-          console.log("Manual submit triggered via ref");
           const isValid = await trigger();
           if (isValid) {
             const data = getValues();

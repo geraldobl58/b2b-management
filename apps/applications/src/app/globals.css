@@ -12,6 +12,12 @@
   .MuiDrawer-root {
     @apply [all:unset];
   }
+  .MuiPickersLayout-root {
+    display: grid;
+    grid-auto-columns: max-content auto max-content;
+    grid-auto-rows: max-content auto max-content;
+    background: #fff;
+  }
 }
 
 @layer base {
