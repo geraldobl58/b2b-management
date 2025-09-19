@@ -34,3 +34,50 @@ export async function createContractAction(
     return handleApiError(error);
   }
 }
+
+export async function updateContractAction(
+  id: string,
+  data: FormContractValues
+): Promise<ApiResponse<Contract>> {
+  try {
+    const token = await getTokenFromCookies();
+    if (!token) {
+      return {
+        success: false,
+        error: "Token de autenticação não encontrado",
+      };
+    }
+
+    const response = await contract.updateContract(id, data, token);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: unknown) {
+    console.error("Erro ao atualizar contrato:", error);
+    return handleApiError(error);
+  }
+}
+
+export async function deleteContractAction(
+  id: string
+): Promise<ApiResponse<void>> {
+  try {
+    const token = await getTokenFromCookies();
+    if (!token) {
+      return {
+        success: false,
+        error: "Token de autenticação não encontrado",
+      };
+    }
+
+    await contract.deleteContract(id, token);
+    return {
+      success: true,
+      data: undefined,
+    };
+  } catch (error: unknown) {
+    console.error("Erro ao excluir contrato:", error);
+    return handleApiError(error);
+  }
+}

@@ -2,6 +2,7 @@ import api, { createApiWithToken } from "@/config/api";
 import {
   ContractListResponse,
   CreateContractResponse,
+  ContractWithRelations,
 } from "../types/contract";
 import { FormContractValues } from "../schemas/contract";
 
@@ -25,6 +26,24 @@ export const contract = {
     return response.data;
   },
 
+  async updateContract(
+    id: string,
+    data: FormContractValues,
+    token?: string
+  ): Promise<CreateContractResponse> {
+    const apiInstance = getApiInstance(token);
+    const response = await apiInstance.patch<CreateContractResponse>(
+      `/contracts/${id}`,
+      data
+    );
+    return response.data;
+  },
+
+  async deleteContract(id: string, token?: string): Promise<void> {
+    const apiInstance = getApiInstance(token);
+    await apiInstance.delete(`/contracts/${id}`);
+  },
+
   async getContracts(
     params?: {
       page?: number;
@@ -41,6 +60,17 @@ export const contract = {
     const response = await apiInstance.get<ContractListResponse>("/contracts", {
       params,
     });
+    return response.data;
+  },
+
+  async getContractById(
+    id: string,
+    token?: string
+  ): Promise<ContractWithRelations> {
+    const apiInstance = getApiInstance(token);
+    const response = await apiInstance.get<ContractWithRelations>(
+      `/contracts/${id}`
+    );
     return response.data;
   },
 };

@@ -38,3 +38,25 @@ export interface CreateContractRequest {
 export interface CreateContractResponse {
   data: Contract;
 }
+
+export interface ContractWithRelations extends Contract {
+  campaigns?: Array<{
+    id: string;
+    name: string;
+    startDate: string;
+    endDate: string;
+    type: string;
+  }>;
+  client?: {
+    id: string;
+    companyName: string;
+    fantasyName: string;
+    cnpj: string;
+  };
+  createdBy?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+}

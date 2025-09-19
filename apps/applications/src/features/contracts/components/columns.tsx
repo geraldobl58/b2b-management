@@ -1,7 +1,7 @@
 import { Column, TableHelpers } from "@/components/common/data-table";
 
 import { Chip } from "@mui/material";
-import { Edit, Eye, Trash } from "lucide-react";
+import { Edit, Trash } from "lucide-react";
 import { Contract } from "../types/contract";
 
 interface ColumnsProps {
@@ -11,7 +11,6 @@ interface ColumnsProps {
 }
 
 export const createColumns = ({
-  onView,
   onEdit,
   onDelete,
 }: ColumnsProps = {}): Column[] => [
@@ -41,14 +40,27 @@ export const createColumns = ({
     label: "Nº Campanhas",
     minWidth: 100,
     sortable: false,
-    renderCell: (value: unknown) => {
-      const campaigns =
-        typeof value === "object" &&
-        value !== null &&
-        "campaigns" in value &&
-        typeof (value as { campaigns?: unknown }).campaigns === "number"
-          ? (value as { campaigns: number }).campaigns
-          : 0;
+    renderCell: (value: unknown, row: Record<string, unknown>) => {
+      // Try to get campaigns count from different possible paths
+      let campaigns = 0;
+
+      // Check if it's in _count.campaigns
+      if (
+        row._count &&
+        typeof row._count === "object" &&
+        "campaigns" in row._count
+      ) {
+        campaigns = (row._count as { campaigns: number }).campaigns;
+      }
+      // Check if it's directly in campaigns array
+      else if (Array.isArray(row.campaigns)) {
+        campaigns = row.campaigns.length;
+      }
+      // Check if value itself is a number
+      else if (typeof value === "number") {
+        campaigns = value;
+      }
+
       return (
         <Chip
           label={campaigns}
@@ -94,16 +106,6 @@ export const createColumns = ({
     renderCell: (_: unknown, row: Record<string, unknown>) => {
       const contract = row as unknown as Contract;
       return TableHelpers.renderActions([
-        {
-          icon: <Eye size={16} />,
-          label: "Visualizar",
-          color: "primary",
-          onClick: () => {
-            if (onView) {
-              onView(contract);
-            }
-          },
-        },
         {
           icon: <Edit size={16} />,
           label: "Editar",

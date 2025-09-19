@@ -1,9 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/pt-br";
 
@@ -22,14 +21,28 @@ import {
   searchContractSchema,
   SearchContractValues,
 } from "@/features/contracts/schemas/search-contract";
+import { FormContractValues } from "@/features/contracts/schemas/contract";
 import { useContract } from "@/features/contracts/hooks/use-contract";
 import { DataTable } from "@/components/common/data-table";
 import { createColumns } from "@/features/contracts/components/columns";
-import { useConfirmationDialog } from "@/components/common";
+import {
+  ConfirmationDialog,
+  useConfirmationDialog,
+  FormDialog,
+} from "@/components/common";
+import {
+  ContractForm,
+  ContractFormRef,
+} from "@/features/contracts/components/contract-form";
 import { Contract } from "@/features/contracts/types/contract";
 
 const ContractPage = () => {
-  const router = useRouter();
+  const [openDialog, setOpenDialog] = useState(false);
+  const [editingContract, setEditingContract] = useState<Contract | null>(null);
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(
+    null
+  );
+  const contractFormRef = useRef<ContractFormRef>(null);
 
   const {
     contracts,
@@ -47,6 +60,13 @@ const ContractPage = () => {
     setPage,
     setLimit,
     clearFilters,
+    isCreatingContract,
+    isUpdatingContract,
+    createContract,
+    updateContract,
+    deleteContract,
+    isDeletingContract,
+    deleteContractError,
   } = useContract();
 
   const deleteDialog = useConfirmationDialog({
@@ -57,23 +77,57 @@ const ContractPage = () => {
     confirmText: "Excluir",
   });
 
-  const handleViewContract = (contract: Contract) => {
-    router.push(`/contracts/${contract.id}/view`);
-  };
-
   const handleEditContract: (contract: Contract) => void = (
     contract: Contract
   ) => {
-    router.push(`/contracts/${contract.id}`);
+    setEditingContract(contract);
+    setOpenDialog(true);
   };
 
-  const handleDeleteContract = () => {
+  const handleDeleteContract = (contract: Contract) => {
+    setSelectedContract(contract);
     deleteDialog.showDialog();
-    // TODO: Implement actual delete functionality
+  };
+
+  const handleOpenDialog = () => {
+    setEditingContract(null);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setEditingContract(null);
+  };
+
+  const handleContractSubmit = async (data: FormContractValues) => {
+    console.log("handleContractSubmit called with:", data);
+    console.log("editingContract:", editingContract);
+    try {
+      if (editingContract) {
+        // Update existing contract
+        console.log(
+          "Attempting to update contract with ID:",
+          editingContract.id
+        );
+        const result = await updateContract({
+          id: editingContract.id,
+          data,
+        });
+        console.log("Update result:", result);
+      } else {
+        // Create new contract
+        console.log("Attempting to create new contract");
+        const result = await createContract(data);
+        console.log("Create result:", result);
+      }
+      console.log("Contract operation completed successfully");
+    } catch (error) {
+      console.error("Error in handleContractSubmit:", error);
+      throw error; // Re-throw to let the form handle it
+    }
   };
 
   const columns = createColumns({
-    onView: handleViewContract,
     onEdit: handleEditContract,
     onDelete: handleDeleteContract,
   });
@@ -133,7 +187,7 @@ const ContractPage = () => {
               variant="contained"
               color="primary"
               startIcon={<PlusIcon />}
-              onClick={() => router.push("/contracts/new")}
+              onClick={() => handleOpenDialog()}
             >
               Adicionar Contrato
             </Button>
@@ -455,6 +509,68 @@ const ContractPage = () => {
             />
           </div>
         </Paper>
+
+        <FormDialog
+          open={openDialog}
+          onClose={handleCloseDialog}
+          onSubmit={async (e) => {
+            e.preventDefault();
+            console.log("FormDialog onSubmit called - triggering ref submit");
+
+            // Use the ref to trigger form submission
+            if (contractFormRef.current) {
+              await contractFormRef.current.submit();
+            } else {
+              console.error("ContractForm ref is not available");
+            }
+          }}
+          title={editingContract ? "Editar Contrato" : "Novo Contrato"}
+          mode={editingContract ? "edit" : "create"}
+          isLoading={isCreatingContract || isUpdatingContract}
+          maxWidth="md"
+          fullWidth
+        >
+          <ContractForm
+            ref={contractFormRef}
+            key={editingContract?.id || "new"} // Force re-render when switching between create/edit
+            contract={editingContract?.id}
+            mode={editingContract ? "edit" : "create"}
+            onSubmit={handleContractSubmit}
+            onSuccess={handleCloseDialog}
+          />
+        </FormDialog>
+
+        <ConfirmationDialog
+          open={deleteDialog.isOpen}
+          onClose={deleteDialog.hideDialog}
+          onConfirm={async () => {
+            if (selectedContract) {
+              try {
+                await deleteContract(selectedContract.id);
+                setSelectedContract(null);
+                deleteDialog.hideDialog();
+              } catch (error) {
+                console.error("Erro ao deletar contrato:", error);
+              }
+            }
+          }}
+          title="Excluir Contrato"
+          message={
+            selectedContract
+              ? `Tem certeza que deseja excluir o contrato "${selectedContract.name}"? Esta ação não pode ser desfeita.`
+              : "Tem certeza que deseja excluir este contrato? Esta ação não pode ser desfeita."
+          }
+          variant="delete"
+          confirmText="Excluir"
+          isLoading={isDeletingContract}
+          disabled={isDeletingContract}
+        />
+
+        {deleteContractError && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            Erro ao excluir contrato: {deleteContractError}
+          </Alert>
+        )}
       </Box>
     </LocalizationProvider>
   );

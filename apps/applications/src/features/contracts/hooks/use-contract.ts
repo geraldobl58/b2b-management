@@ -7,7 +7,11 @@ import { SearchContractValues } from "../schemas/search-contract";
 import { contract } from "../http/contract";
 import { cookieUtils } from "@/lib/cookies";
 import { FormContractValues } from "../schemas/contract";
-import { createContractAction } from "../actions/contract";
+import {
+  createContractAction,
+  updateContractAction,
+  deleteContractAction,
+} from "../actions/contract";
 
 interface UseContractParams {
   page?: number;
@@ -194,6 +198,39 @@ export const useContract = (initialParams?: UseContractParams) => {
     },
   });
 
+  const updateContractMutation = useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: FormContractValues;
+    }) => {
+      const result = await updateContractAction(id, data);
+      if (!result.success) {
+        throw new Error(result.error || "Erro ao atualizar contrato");
+      }
+      return result.data!;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contracts"] });
+      queryClient.invalidateQueries({ queryKey: ["contract"] });
+    },
+  });
+
+  const deleteContractMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const result = await deleteContractAction(id);
+      if (!result.success) {
+        throw new Error(result.error || "Erro ao excluir contrato");
+      }
+      return result.data!;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contracts"] });
+    },
+  });
+
   return {
     contracts: contractsData?.data || [],
     contractsMeta: contractsData?.meta,
@@ -240,5 +277,46 @@ export const useContract = (initialParams?: UseContractParams) => {
     createContract: contractMutation.mutate,
     isCreatingContract: contractMutation.isPending,
     createContractError: contractMutation.error?.message,
+
+    // UPDATE CONTRACT
+    updateContract: updateContractMutation.mutate,
+    isUpdatingContract: updateContractMutation.isPending,
+    updateContractError: updateContractMutation.error?.message,
+
+    // DELETE CONTRACT
+    deleteContract: deleteContractMutation.mutate,
+    isDeletingContract: deleteContractMutation.isPending,
+    deleteContractError: deleteContractMutation.error?.message,
+  };
+};
+
+export const useContractById = (id: string) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["contract", id],
+    queryFn: async () => {
+      try {
+        const result = await contract.getContractById(id);
+        return result;
+      } catch (error) {
+        if (error && typeof error === "object" && "response" in error) {
+          const axiosError = error as {
+            response?: { status?: number; data?: unknown };
+          };
+          if (axiosError.response?.status === 401) {
+            cookieUtils.removeToken();
+          }
+        }
+        throw error;
+      }
+    },
+    enabled: cookieUtils.hasToken() && !!id,
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  });
+
+  return {
+    data: data, // Direct data since we changed the API response type
+    isLoading,
+    error: error?.message,
   };
 };
