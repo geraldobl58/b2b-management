@@ -22,6 +22,7 @@ export interface DatePickerFieldProps {
   error?: boolean;
   helperText?: string;
   fullWidth?: boolean;
+  outputFormat?: "date" | "string"; // Para controlar o formato de saída
 }
 
 /**
@@ -34,4 +35,5 @@ export interface DateRangeProps {
   disabled?: boolean;
   layout?: "horizontal" | "vertical";
   allowPastDates?: boolean; // Para filtros, permitir datas passadas
+  outputFormat?: "date" | "string"; // Para controlar o formato de saída
 }

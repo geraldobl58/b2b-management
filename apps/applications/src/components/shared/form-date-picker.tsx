@@ -28,59 +28,59 @@ export const FormDatePicker = <TFormValues extends FieldValues>({
     <Controller
       name={name}
       control={control}
-      render={({ field }) => (
-        <DatePicker
-          label={datePickerProps.label}
-          value={field.value ? dayjs(field.value) : null}
-          onChange={(newValue: dayjs.Dayjs | null) => {
-            const formattedDate =
-              newValue && newValue.isValid() ? newValue.toISOString() : "";
-            field.onChange(formattedDate);
-          }}
-          disabled={isLoading || datePickerProps.disabled}
-          minDate={
-            datePickerProps.minDate ? dayjs(datePickerProps.minDate) : undefined
-          }
-          maxDate={
-            datePickerProps.maxDate ? dayjs(datePickerProps.maxDate) : undefined
-          }
-          slotProps={{
-            textField: {
-              fullWidth: datePickerProps.fullWidth ?? true,
-              error: !!fieldError,
-              helperText: fieldError?.message as string,
-              size: "small",
-              sx: {
-                "& .MuiInputBase-root": {
-                  borderRadius: "12px",
-                  backgroundColor: "#f9f9f9",
-                },
-                "& input": {
-                  fontSize: "14px",
-                },
+      render={({ field }) => {
+        // Verificar se o valor é válido antes de passar para dayjs
+        const getValue = () => {
+          if (!field.value) return null;
+
+          // Se é uma string vazia, retorna null
+          if (typeof field.value === "string" && field.value === "")
+            return null;
+
+          // Tenta converter qualquer valor para dayjs
+          const date = dayjs(field.value);
+          return date.isValid() ? date : null;
+        };
+
+        return (
+          <DatePicker
+            label={datePickerProps.label}
+            value={getValue()}
+            onChange={(newValue: dayjs.Dayjs | null) => {
+              if (datePickerProps.outputFormat === "string") {
+                // Para filtros - retorna string ISO ou vazia
+                const formattedDate =
+                  newValue && newValue.isValid() ? newValue.toISOString() : "";
+                field.onChange(formattedDate);
+              } else {
+                // Para formulários - retorna objeto Date ou null
+                const formattedDate =
+                  newValue && newValue.isValid() ? newValue.toDate() : null;
+                field.onChange(formattedDate);
+              }
+            }}
+            disabled={isLoading || datePickerProps.disabled}
+            minDate={
+              datePickerProps.minDate
+                ? dayjs(datePickerProps.minDate)
+                : undefined
+            }
+            maxDate={
+              datePickerProps.maxDate
+                ? dayjs(datePickerProps.maxDate)
+                : undefined
+            }
+            slotProps={{
+              textField: {
+                fullWidth: datePickerProps.fullWidth ?? true,
+                error: !!fieldError,
+                helperText: fieldError?.message as string,
+                size: "small",
               },
-            },
-            popper: {
-              sx: {
-                "& .MuiPaper-root": {
-                  borderRadius: "16px",
-                  boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
-                },
-                "& .MuiPickersDay-root": {
-                  fontWeight: "500",
-                  "&.Mui-selected": {
-                    backgroundColor: "#1976d2",
-                    color: "#fff",
-                  },
-                  "&:hover": {
-                    backgroundColor: "#e3f2fd",
-                  },
-                },
-              },
-            },
-          }}
-        />
-      )}
+            }}
+          />
+        );
+      }}
     />
   );
 };

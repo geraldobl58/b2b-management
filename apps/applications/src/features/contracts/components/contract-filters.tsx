@@ -144,6 +144,7 @@ export const ContractFilters = ({
                 }
                 layout="horizontal"
                 allowPastDates={true} // Permite datas passadas nos filtros
+                outputFormat="string" // Para filtros, usa strings
                 startDateProps={{
                   label: "Data Inicial",
                 }}

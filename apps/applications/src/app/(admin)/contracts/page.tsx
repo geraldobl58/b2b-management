@@ -51,8 +51,13 @@ const ContractPage = () => {
     setOpenDialog(true);
   };
 
-  const handleDeleteContract = (contract: Contract) => {
-    setSelectedContract(contract);
+  const handleDeleteContract = async (contract: Contract) => {
+    try {
+      await deleteContract(contract.id);
+      console.log("Contract deleted successfully");
+    } catch (error) {
+      console.error("Error deleting contract:", error);
+    }
   };
 
   const handleOpenDialog = () => {

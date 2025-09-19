@@ -28,6 +28,7 @@ export const FormDateRange = <TFormValues extends FieldValues>({
   startDateProps = {},
   endDateProps = {},
   allowPastDates = false, // Por padrão, não permite datas passadas (para formulários)
+  outputFormat = "date", // Por padrão, retorna Date objects (para formulários)
 }: FormDateRangeProps<TFormValues>) => {
   return (
     <Box
@@ -47,6 +48,7 @@ export const FormDateRange = <TFormValues extends FieldValues>({
           label: "Data Inicial",
           minDate: allowPastDates ? undefined : new Date(), // Se permite datas passadas, não define minDate
           fullWidth: true,
+          outputFormat,
           ...startDateProps,
         }}
       />
@@ -64,6 +66,7 @@ export const FormDateRange = <TFormValues extends FieldValues>({
               ? undefined // Se permite datas passadas, não define minDate baseada na data atual
               : dayjs().add(1, "day").toDate(),
           fullWidth: true,
+          outputFormat,
           ...endDateProps,
         }}
       />
