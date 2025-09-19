@@ -152,11 +152,12 @@ export const useContract = (initialParams?: UseContractParams) => {
         const params = {
           page,
           limit,
-          name: name || undefined,
-          partner: partner || undefined,
-          clientName: clientName || undefined,
-          startDate: startDate || undefined,
-          endDate: endDate || undefined,
+          ...(name && name.trim() && { name: name.trim() }),
+          ...(partner && partner.trim() && { partner: partner.trim() }),
+          ...(clientName &&
+            clientName.trim() && { clientName: clientName.trim() }),
+          ...(startDate && startDate.trim() && { startDate: startDate.trim() }),
+          ...(endDate && endDate.trim() && { endDate: endDate.trim() }),
         };
 
         const result = await contract.getContracts(params, token);

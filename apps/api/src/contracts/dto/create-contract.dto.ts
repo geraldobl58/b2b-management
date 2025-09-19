@@ -29,16 +29,16 @@ export class CreateContractDto {
   @IsDateString()
   @IsNotEmpty()
   @ApiProperty({
-    example: '2024-01-01T00:00:00.000Z',
-    description: 'Contract start date in ISO format',
+    example: '2024-01-01',
+    description: 'Contract start date in YYYY-MM-DD format',
   })
   startDate: string;
 
   @IsDateString()
   @IsNotEmpty()
   @ApiProperty({
-    example: '2024-12-31T23:59:59.000Z',
-    description: 'Contract end date in ISO format',
+    example: '2024-12-31',
+    description: 'Contract end date in YYYY-MM-DD format',
   })
   endDate: string;
 }

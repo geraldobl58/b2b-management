@@ -1,13 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import {
-  IsInt,
-  IsOptional,
-  IsString,
-  Max,
-  Min,
-  IsDateString,
-} from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class QueryContractDto {
   @IsOptional()
@@ -50,18 +43,20 @@ export class QueryContractDto {
   clientName?: string;
 
   @IsOptional()
-  @IsDateString()
+  @IsString()
   @ApiPropertyOptional({
     example: '2024-01-01',
-    description: 'Filter contracts starting from this date',
+    description:
+      'Filter contracts starting from this date (YYYY-MM-DD or ISO format)',
   })
   startDate?: string;
 
   @IsOptional()
-  @IsDateString()
+  @IsString()
   @ApiPropertyOptional({
     example: '2024-12-31',
-    description: 'Filter contracts ending until this date',
+    description:
+      'Filter contracts ending until this date (YYYY-MM-DD or ISO format)',
   })
   endDate?: string;
 }

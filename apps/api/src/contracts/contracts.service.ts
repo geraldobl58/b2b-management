@@ -111,49 +111,54 @@ export class ContractsService {
       };
     }
 
-    // Date range filtering: find contracts that overlap with the search range
-    // A contract overlaps with the search range if:
-    // - The contract starts before or on the search end date, AND
-    // - The contract ends after or on the search start date
-    if (startDate && endDate) {
-      // Convert search dates to proper Date objects
-      const searchStartDate = new Date(startDate);
-      const searchEndDate = new Date(endDate);
+    // Date filtering: exact date comparison with error handling
+    if (startDate && startDate.trim() && endDate && endDate.trim()) {
+      try {
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
 
-      // Set search start to beginning of day
-      searchStartDate.setUTCHours(0, 0, 0, 0);
-      // Set search end to end of day
-      searchEndDate.setUTCHours(23, 59, 59, 999);
-
-      // Both dates provided - find contracts that overlap with the range
-      where.AND = [
-        {
-          startDate: {
-            lte: searchEndDate, // Contract starts before or on search end date
-          },
-        },
-        {
-          endDate: {
-            gte: searchStartDate, // Contract ends after or on search start date
-          },
-        },
-      ];
-    } else if (startDate) {
-      const searchStartDate = new Date(startDate);
-      searchStartDate.setUTCHours(0, 0, 0, 0);
-
-      // Only start date provided - find contracts that are active on or after this date
-      where.endDate = {
-        gte: searchStartDate,
-      };
-    } else if (endDate) {
-      const searchEndDate = new Date(endDate);
-      searchEndDate.setUTCHours(23, 59, 59, 999);
-
-      // Only end date provided - find contracts that are active on or before this date
-      where.startDate = {
-        lte: searchEndDate,
-      };
+        if (!isNaN(startDateObj.getTime()) && !isNaN(endDateObj.getTime())) {
+          // Both dates provided - find contracts within the exact date range
+          where.AND = [
+            {
+              startDate: {
+                gte: startDateObj, // Contract starts on or after search start date
+              },
+            },
+            {
+              endDate: {
+                lte: endDateObj, // Contract ends on or before search end date
+              },
+            },
+          ];
+        }
+      } catch {
+        // Ignore invalid dates
+      }
+    } else if (startDate && startDate.trim()) {
+      try {
+        const startDateObj = new Date(startDate);
+        if (!isNaN(startDateObj.getTime())) {
+          // Only start date provided - find contracts that start on or after this date
+          where.startDate = {
+            gte: startDateObj,
+          };
+        }
+      } catch {
+        // Ignore invalid dates
+      }
+    } else if (endDate && endDate.trim()) {
+      try {
+        const endDateObj = new Date(endDate);
+        if (!isNaN(endDateObj.getTime())) {
+          // Only end date provided - find contracts that end on or before this date
+          where.endDate = {
+            lte: endDateObj,
+          };
+        }
+      } catch {
+        // Ignore invalid dates
+      }
     }
 
     const [contracts, total] = await Promise.all([

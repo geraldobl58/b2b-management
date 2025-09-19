@@ -226,10 +226,11 @@ const ContractPage = () => {
                     <DatePicker
                       label="Data Inicial"
                       value={field.value ? dayjs(field.value) : null}
-                      onChange={(newValue) => {
-                        const formattedDate = newValue
-                          ? newValue.toISOString()
-                          : "";
+                      onChange={(newValue: dayjs.Dayjs | null) => {
+                        const formattedDate =
+                          newValue && newValue.isValid()
+                            ? newValue.toISOString()
+                            : "";
                         field.onChange(formattedDate);
                       }}
                       slotProps={{
@@ -313,10 +314,11 @@ const ContractPage = () => {
                     <DatePicker
                       label="Data Final"
                       value={field.value ? dayjs(field.value) : null}
-                      onChange={(newValue) => {
-                        const formattedDate = newValue
-                          ? newValue.toISOString()
-                          : "";
+                      onChange={(newValue: dayjs.Dayjs | null) => {
+                        const formattedDate =
+                          newValue && newValue.isValid()
+                            ? newValue.toISOString()
+                            : "";
                         field.onChange(formattedDate);
                       }}
                       slotProps={{
