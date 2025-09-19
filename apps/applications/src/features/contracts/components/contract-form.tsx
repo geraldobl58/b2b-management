@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   useState,
   useEffect,
@@ -13,19 +13,7 @@ import {
   formContractSchema,
   FormContractValues,
 } from "@/features/contracts/schemas/contract";
-import {
-  Box,
-  TextField,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  FormHelperText,
-  Alert,
-} from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { Box } from "@mui/material";
 import dayjs from "dayjs";
 import "dayjs/locale/pt-br";
 import {
@@ -33,6 +21,13 @@ import {
   useContractById,
 } from "@/features/contracts/hooks/use-contract";
 import { useClient } from "@/features/clients/hooks/use-client";
+import {
+  ClientSelect,
+  ContractBasicFields,
+  DateRangeFields,
+  LoadingState,
+} from "./shared";
+import { DatePickerProvider, FormErrorAlert } from "@/components/shared";
 
 dayjs.locale("pt-br");
 
@@ -174,13 +169,7 @@ export const ContractForm = forwardRef<ContractFormRef, ContractFormProps>(
 
     // Don't render form until contract data is loaded for edit mode
     if (mode === "edit" && contractId && isLoadingContract) {
-      return (
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
-          <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
-            Carregando dados do contrato...
-          </Box>
-        </LocalizationProvider>
-      );
+      return <LoadingState isLoading={true} />;
     }
 
     // Show error if contract not found
@@ -191,143 +180,36 @@ export const ContractForm = forwardRef<ContractFormRef, ContractFormProps>(
       !contractData &&
       contractError
     ) {
-      return (
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
-          <Alert severity="error" sx={{ mb: 2 }}>
-            Erro ao carregar contrato: {contractError}
-          </Alert>
-        </LocalizationProvider>
-      );
+      return <LoadingState error={contractError} />;
     }
 
     return (
-      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
+      <DatePickerProvider>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-          {/* Client Selection */}
-          <Controller
-            name="clientId"
+          <FormErrorAlert error={error} />
+
+          <ClientSelect
             control={control}
-            render={({ field }) => (
-              <FormControl fullWidth error={!!errors.clientId}>
-                <InputLabel>Cliente *</InputLabel>
-                <Select
-                  {...field}
-                  label="Cliente *"
-                  disabled={isLoading || isLoadingClients}
-                >
-                  {clients?.map((client) => (
-                    <MenuItem key={client.id} value={client.id}>
-                      {client.companyName} (
-                      {client.fantasyName || "Sem nome fantasia"})
-                    </MenuItem>
-                  ))}
-                </Select>
-                {errors.clientId && (
-                  <FormHelperText>{errors.clientId.message}</FormHelperText>
-                )}
-              </FormControl>
-            )}
+            errors={errors}
+            clients={clients}
+            isLoading={isLoading}
+            isLoadingClients={isLoadingClients}
           />
 
-          {/* Contract Name */}
-          <Controller
-            name="name"
+          <ContractBasicFields
             control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                fullWidth
-                label="Nome do Contrato"
-                error={!!errors.name}
-                helperText={errors.name?.message}
-                disabled={isLoading}
-              />
-            )}
+            errors={errors}
+            isLoading={isLoading}
           />
 
-          {/* Partner */}
-          <Controller
-            name="partner"
+          <DateRangeFields
             control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                fullWidth
-                label="Parceiro"
-                error={!!errors.partner}
-                helperText={errors.partner?.message}
-                disabled={isLoading}
-              />
-            )}
+            errors={errors}
+            startDate={startDate}
+            isLoading={isLoading}
           />
-
-          {/* Date Range */}
-          <Box
-            sx={{
-              display: "flex",
-              gap: 2,
-              flexDirection: { xs: "column", sm: "row" },
-            }}
-          >
-            {/* Start Date */}
-            <Controller
-              name="startDate"
-              control={control}
-              render={({ field }) => (
-                <DatePicker
-                  label="Data de Início *"
-                  value={field.value ? dayjs(field.value) : null}
-                  onChange={(newValue: dayjs.Dayjs | null) => {
-                    field.onChange(newValue ? newValue.toDate() : null);
-                  }}
-                  disabled={isLoading}
-                  minDate={dayjs()} // Disable past dates
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      error: !!errors.startDate,
-                      helperText: errors.startDate?.message,
-                    },
-                  }}
-                />
-              )}
-            />
-
-            {/* End Date */}
-            <Controller
-              name="endDate"
-              control={control}
-              render={({ field }) => (
-                <DatePicker
-                  label="Data de Término *"
-                  value={field.value ? dayjs(field.value) : null}
-                  onChange={(newValue: dayjs.Dayjs | null) => {
-                    field.onChange(newValue ? newValue.toDate() : null);
-                  }}
-                  disabled={isLoading}
-                  minDate={
-                    startDate
-                      ? dayjs(startDate).add(1, "day")
-                      : dayjs().add(1, "day")
-                  } // Minimum is start date + 1 day or tomorrow
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      error: !!errors.endDate,
-                      helperText: errors.endDate?.message,
-                    },
-                  }}
-                />
-              )}
-            />
-          </Box>
         </Box>
-      </LocalizationProvider>
+      </DatePickerProvider>
     );
   }
 );
