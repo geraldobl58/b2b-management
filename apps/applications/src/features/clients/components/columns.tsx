@@ -1,7 +1,7 @@
-import { Column, TableHelpers } from "@/components/common/data-table";
+import { Column } from "@/components/common/data-table";
+import { ActionsMenu } from "@/components/shared/actions-menu";
 
 import { Chip } from "@mui/material";
-import { Edit, Eye, Trash } from "lucide-react";
 import { Client } from "@/features/clients/types/client";
 
 interface ColumnsProps {
@@ -118,38 +118,14 @@ export const createColumns = ({
     sortable: false,
     renderCell: (_: unknown, row: Record<string, unknown>) => {
       const client = row as unknown as Client;
-      return TableHelpers.renderActions([
-        {
-          icon: <Eye size={16} />,
-          label: "Visualizar",
-          color: "primary",
-          onClick: () => {
-            if (onView) {
-              onView(client);
-            }
-          },
-        },
-        {
-          icon: <Edit size={16} />,
-          label: "Editar",
-          color: "primary",
-          onClick: () => {
-            if (onEdit) {
-              onEdit(client);
-            }
-          },
-        },
-        {
-          icon: <Trash size={16} />,
-          label: "Deletar",
-          color: "error",
-          onClick: () => {
-            if (onDelete) {
-              onDelete(client);
-            }
-          },
-        },
-      ]);
+      return (
+        <ActionsMenu
+          item={client}
+          onView={onView}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      );
     },
   },
 ];

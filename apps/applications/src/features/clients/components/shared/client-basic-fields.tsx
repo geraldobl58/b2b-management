@@ -1,0 +1,135 @@
+import { Controller, Control, FieldErrors } from "react-hook-form";
+import {
+  Box,
+  TextField,
+  FormControl,
+  FormHelperText,
+  InputLabel,
+  MenuItem,
+  Select,
+} from "@mui/material";
+import { cnpjMask } from "@/lib/masks";
+import { FormClientValues } from "@/features/clients/schemas/client";
+
+interface ClientBasicFieldsProps {
+  control: Control<FormClientValues>;
+  errors: FieldErrors<FormClientValues>;
+}
+
+export const ClientBasicFields = ({
+  control,
+  errors,
+}: ClientBasicFieldsProps) => {
+  return (
+    <>
+      <Box className="flex items-center gap-8">
+        <Controller
+          name="cnpj"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              fullWidth
+              label="CNPJ"
+              variant="outlined"
+              placeholder="XX.XXX.XXX/XXXX-XX"
+              error={!!errors.cnpj}
+              helperText={errors.cnpj?.message}
+              onChange={(e) => {
+                const maskedValue = cnpjMask(e.target.value);
+                field.onChange(maskedValue);
+              }}
+              slotProps={{ htmlInput: { maxLength: 18 } }}
+            />
+          )}
+        />
+        <Controller
+          name="companyName"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              fullWidth
+              label="Empresa"
+              variant="outlined"
+              error={!!errors.companyName}
+              helperText={errors.companyName?.message}
+            />
+          )}
+        />
+        <Controller
+          name="fantasyName"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              fullWidth
+              label="Nome Fantasia"
+              variant="outlined"
+              error={!!errors.fantasyName}
+              helperText={errors.fantasyName?.message}
+            />
+          )}
+        />
+      </Box>
+
+      <Box className="flex items-center gap-8">
+        <Controller
+          name="taxpayerType"
+          control={control}
+          render={({ field }) => (
+            <FormControl fullWidth error={!!errors.taxpayerType}>
+              <InputLabel id="taxpayer-type-label">
+                Tipo de Contribuinte
+              </InputLabel>
+              <Select
+                labelId="taxpayer-type-label"
+                id="taxpayer-type-select"
+                value={field.value}
+                label="Tipo de Contribuinte"
+                onChange={field.onChange}
+              >
+                <MenuItem value="INSENTO">Insento</MenuItem>
+                <MenuItem value="MEI">Mei</MenuItem>
+                <MenuItem value="SIMPLES_NACIONAL">Simples Nacional</MenuItem>
+                <MenuItem value="LUCRO_PRESUMIDO">Lucro Presumido</MenuItem>
+                <MenuItem value="LUCRO_REAL">Lucro Real</MenuItem>
+              </Select>
+              {errors.taxpayerType && (
+                <FormHelperText>{errors.taxpayerType?.message}</FormHelperText>
+              )}
+            </FormControl>
+          )}
+        />
+        <Controller
+          name="stateRegistration"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              fullWidth
+              label="Inscrição Estadual (Opcional)"
+              variant="outlined"
+              error={!!errors.stateRegistration}
+              helperText={errors.stateRegistration?.message}
+            />
+          )}
+        />
+        <Controller
+          name="typeRelationship"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              fullWidth
+              label="Tipo de Relacionamento (Opcional)"
+              variant="outlined"
+              error={!!errors.typeRelationship}
+              helperText={errors.typeRelationship?.message}
+            />
+          )}
+        />
+      </Box>
+    </>
+  );
+};

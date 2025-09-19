@@ -11,6 +11,7 @@ interface ColumnsProps {
 }
 
 export const createColumns = ({
+  onView,
   onEdit,
   onDelete,
 }: ColumnsProps = {}): Column[] => [
@@ -108,8 +109,7 @@ export const createColumns = ({
       return (
         <ActionsMenu
           item={contract}
-          itemName={contract.name}
-          itemType="contrato"
+          onView={onView}
           onEdit={onEdit}
           onDelete={onDelete}
         />
