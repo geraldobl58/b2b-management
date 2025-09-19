@@ -16,6 +16,15 @@ export const createColumns = ({
   onDelete,
 }: ColumnsProps = {}): Column[] => [
   {
+    id: "clientName",
+    label: "Nome do cliente",
+    minWidth: 140,
+    sortable: true,
+    renderCell: (value) => {
+      return value as React.ReactNode;
+    },
+  },
+  {
     id: "name",
     label: "Nome do contrato",
     minWidth: 140,
@@ -49,6 +58,32 @@ export const createColumns = ({
           className="w-10 text-xs font-bold"
         />
       );
+    },
+  },
+  {
+    id: "startDate",
+    label: "Data de Início",
+    minWidth: 200,
+    sortable: true,
+    renderCell: (value) => {
+      if (typeof value === "string") {
+        const date = new Date(value);
+        return date.toLocaleDateString("pt-BR");
+      }
+      return value as React.ReactNode;
+    },
+  },
+  {
+    id: "endDate",
+    label: "Data de Término",
+    minWidth: 200,
+    sortable: true,
+    renderCell: (value) => {
+      if (typeof value === "string") {
+        const date = new Date(value);
+        return date.toLocaleDateString("pt-BR");
+      }
+      return value as React.ReactNode;
     },
   },
   {

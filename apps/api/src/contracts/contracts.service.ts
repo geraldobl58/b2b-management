@@ -70,7 +70,15 @@ export class ContractsService {
   }
 
   async findAll(query: QueryContractDto) {
-    const { page = 1, limit = 10, name, partner } = query;
+    const {
+      page = 1,
+      limit = 10,
+      name,
+      partner,
+      clientName,
+      startDate,
+      endDate,
+    } = query;
 
     const skip = (page - 1) * limit;
 
@@ -82,6 +90,70 @@ export class ContractsService {
 
     if (partner) {
       where.partner = { contains: partner, mode: 'insensitive' };
+    }
+
+    if (clientName) {
+      where.client = {
+        OR: [
+          {
+            companyName: {
+              contains: clientName,
+              mode: 'insensitive',
+            },
+          },
+          {
+            fantasyName: {
+              contains: clientName,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      };
+    }
+
+    // Date range filtering: find contracts that overlap with the search range
+    // A contract overlaps with the search range if:
+    // - The contract starts before or on the search end date, AND
+    // - The contract ends after or on the search start date
+    if (startDate && endDate) {
+      // Convert search dates to proper Date objects
+      const searchStartDate = new Date(startDate);
+      const searchEndDate = new Date(endDate);
+
+      // Set search start to beginning of day
+      searchStartDate.setUTCHours(0, 0, 0, 0);
+      // Set search end to end of day
+      searchEndDate.setUTCHours(23, 59, 59, 999);
+
+      // Both dates provided - find contracts that overlap with the range
+      where.AND = [
+        {
+          startDate: {
+            lte: searchEndDate, // Contract starts before or on search end date
+          },
+        },
+        {
+          endDate: {
+            gte: searchStartDate, // Contract ends after or on search start date
+          },
+        },
+      ];
+    } else if (startDate) {
+      const searchStartDate = new Date(startDate);
+      searchStartDate.setUTCHours(0, 0, 0, 0);
+
+      // Only start date provided - find contracts that are active on or after this date
+      where.endDate = {
+        gte: searchStartDate,
+      };
+    } else if (endDate) {
+      const searchEndDate = new Date(endDate);
+      searchEndDate.setUTCHours(23, 59, 59, 999);
+
+      // Only end date provided - find contracts that are active on or before this date
+      where.startDate = {
+        lte: searchEndDate,
+      };
     }
 
     const [contracts, total] = await Promise.all([
@@ -124,8 +196,15 @@ export class ContractsService {
       this.prisma.contract.count({ where }),
     ]);
 
+    // Transform data to include computed clientName field
+    const transformedContracts = contracts.map((contract) => ({
+      ...contract,
+      clientName:
+        contract.client?.fantasyName || contract.client?.companyName || 'N/A',
+    }));
+
     return {
-      data: contracts,
+      data: transformedContracts,
       meta: {
         total,
         page,

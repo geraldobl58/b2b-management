@@ -1,23 +1,28 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { SearchContractValues } from "../schemas/search-contract";
 import { contract } from "../http/contract";
 import { cookieUtils } from "@/lib/cookies";
+import { FormContractValues } from "../schemas/contract";
+import { createContractAction } from "../actions/contract";
 
 interface UseContractParams {
   page?: number;
   limit?: number;
   name?: string;
   partner?: string;
+  clientName?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export const useContract = (initialParams?: UseContractParams) => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const searchParams = new URLSearchParams();
+  const searchParams = useSearchParams();
 
   // Initialize state from URL params or default values
   const [page, setPage] = useState(() => {
@@ -38,12 +43,27 @@ export const useContract = (initialParams?: UseContractParams) => {
     return searchParams.get("partner") || initialParams?.partner || "";
   });
 
+  const [clientName, setClientName] = useState(() => {
+    return searchParams.get("clientName") || initialParams?.clientName || "";
+  });
+
+  const [startDate, setStartDate] = useState(() => {
+    return searchParams.get("startDate") || initialParams?.startDate || "";
+  });
+
+  const [endDate, setEndDate] = useState(() => {
+    return searchParams.get("endDate") || initialParams?.endDate || "";
+  });
+
   const updateURL = useCallback(
     (params: {
       page?: number;
       limit?: number;
       name?: string;
       partner?: string;
+      clientName?: string;
+      startDate?: string;
+      endDate?: string;
     }) => {
       const newSearchParams = new URLSearchParams(searchParams.toString());
 
@@ -64,15 +84,21 @@ export const useContract = (initialParams?: UseContractParams) => {
   const applyFilters = useCallback(
     (filters: SearchContractValues) => {
       const newFilters = {
-        name: filters.name || "",
-        partner: filters.partner || "",
         page: 1, // Reset to first page on new filter
         limit,
+        name: filters.name || "",
+        partner: filters.partner || "",
+        clientName: filters.clientName || "",
+        startDate: filters.startDate || "",
+        endDate: filters.endDate || "",
       };
 
       setPage(1);
       setName(newFilters.name);
       setPartner(newFilters.partner);
+      setClientName(newFilters.clientName);
+      setStartDate(newFilters.startDate);
+      setEndDate(newFilters.endDate);
       updateURL(newFilters);
     },
     [updateURL, limit]
@@ -82,12 +108,18 @@ export const useContract = (initialParams?: UseContractParams) => {
     setPage(1);
     setName("");
     setPartner("");
+    setClientName("");
+    setStartDate("");
+    setEndDate("");
 
     updateURL({
       page: 1,
       limit,
       name: "",
       partner: "",
+      clientName: "",
+      startDate: "",
+      endDate: "",
     });
   }, [limit, updateURL]);
 
@@ -99,9 +131,12 @@ export const useContract = (initialParams?: UseContractParams) => {
         limit,
         name,
         partner,
+        clientName,
+        startDate,
+        endDate,
       },
     ],
-    [page, limit, name, partner]
+    [page, limit, name, partner, clientName, startDate, endDate]
   );
 
   const {
@@ -112,15 +147,23 @@ export const useContract = (initialParams?: UseContractParams) => {
     queryKey,
     queryFn: async () => {
       try {
-        const result = await contract.getContracts({
+        const token = cookieUtils.getToken();
+
+        const params = {
           page,
           limit,
           name: name || undefined,
           partner: partner || undefined,
-        });
+          clientName: clientName || undefined,
+          startDate: startDate || undefined,
+          endDate: endDate || undefined,
+        };
+
+        const result = await contract.getContracts(params, token);
 
         return result;
       } catch (error) {
+        console.error("API error:", error);
         if (error && typeof error === "object" && "response" in error) {
           const axiosError = error as {
             response?: { status?: number; data?: unknown };
@@ -137,6 +180,19 @@ export const useContract = (initialParams?: UseContractParams) => {
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
 
+  const contractMutation = useMutation({
+    mutationFn: async (data: FormContractValues) => {
+      const result = await createContractAction(data);
+      if (!result.success) {
+        throw new Error(result.error || "Erro ao criar contrato");
+      }
+      return result.data!;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contracts"] });
+    },
+  });
+
   return {
     contracts: contractsData?.data || [],
     contractsMeta: contractsData?.meta,
@@ -148,6 +204,9 @@ export const useContract = (initialParams?: UseContractParams) => {
     limit,
     name,
     partner,
+    clientName,
+    startDate,
+    endDate,
     setPage: (newPage: number) => {
       setPage(newPage);
       updateURL({
@@ -155,6 +214,9 @@ export const useContract = (initialParams?: UseContractParams) => {
         limit,
         name,
         partner,
+        clientName,
+        startDate,
+        endDate,
       });
     },
     setLimit: (newLimit: number) => {
@@ -165,9 +227,17 @@ export const useContract = (initialParams?: UseContractParams) => {
         limit: newLimit,
         name,
         partner,
+        clientName,
+        startDate,
+        endDate,
       });
     },
     applyFilters,
     clearFilters,
+
+    // CREATE CONTRACT
+    createContract: contractMutation.mutate,
+    isCreatingContract: contractMutation.isPending,
+    createContractError: contractMutation.error?.message,
   };
 };

@@ -1,5 +1,5 @@
 export interface ContractCount {
-  contracts: number;
+  campaigns: number;
 }
 
 export interface Contract {
@@ -9,6 +9,7 @@ export interface Contract {
   partner: string;
   startDate: string;
   endDate: string;
+  clientName: string;
   _count: ContractCount;
 }
 
