@@ -1,5 +1,15 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { PrismaClient, Role, TaxpayerType, PhoneType } from '@prisma/client';
+import {
+  PrismaClient,
+  Role,
+  TaxpayerType,
+  PhoneType,
+  CampaignType,
+  BranchType,
+  ContactRole,
+  PaymentMethod,
+  DeliveryType,
+} from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcrypt';
 
@@ -70,10 +80,99 @@ function generateZipcode(): string {
   return faker.string.numeric(5) + '-' + faker.string.numeric(3);
 }
 
+// Helper to generate campaign names
+function generateCampaignName(): string {
+  const prefixes = [
+    'Campanha',
+    'Promoção',
+    'Festival',
+    'Black Friday',
+    'Cyber Monday',
+    'Natal',
+    'Verão',
+    'Inverno',
+    'Primavera',
+    'Outono',
+  ];
+
+  const types = [
+    'Marketing Digital',
+    'Trade Marketing',
+    'Incentivo',
+    'Branding',
+    'Lançamento',
+    'Fidelização',
+    'Cross-sell',
+    'Up-sell',
+    'Retenção',
+    'Aquisição',
+  ];
+
+  const year = faker.date.recent().getFullYear();
+  return `${faker.helpers.arrayElement(prefixes)} ${faker.helpers.arrayElement(types)} ${year}`;
+}
+
+// Helper to generate realistic business model data
+function generateBusinessModelData() {
+  const paymentMethod = faker.helpers.arrayElement(Object.values(PaymentMethod));
+  const deliveryType = faker.helpers.arrayElement(Object.values(DeliveryType));
+
+  return {
+    paymentMethod,
+    upfront: faker.datatype.boolean(0.3), // 30% chance of upfront payment
+    daysToInvoice: faker.number.int({ min: 0, max: 60 }),
+    notes: faker.datatype.boolean(0.7) ? faker.lorem.sentence() : undefined,
+    billingModel: faker.helpers.arrayElement([
+      'Mensal',
+      'Trimestral',
+      'Semestral',
+      'Anual',
+      'Por projeto',
+      'Por performance',
+    ]),
+    estimateMonthly: faker.datatype.boolean(0.8) ? faker.number.float({ min: 1000, max: 50000, multipleOf: 0.01 }) : undefined,
+    estimateAnnual: faker.datatype.boolean(0.6) ? faker.number.float({ min: 12000, max: 600000, multipleOf: 0.01 }) : undefined,
+    autoInvoicing: faker.datatype.boolean(0.5),
+    priceCycle: faker.helpers.arrayElement(['MONTHLY', 'QUARTERLY', 'ANNUAL']),
+    deliveryType,
+    additional: faker.datatype.boolean(0.4),
+    daysToDeliver: deliveryType === DeliveryType.PHYSICAL ? faker.number.int({ min: 1, max: 30 }) : undefined,
+    chargeFreight: deliveryType === DeliveryType.PHYSICAL ? faker.datatype.boolean(0.6) : false,
+    b2b: faker.datatype.boolean(0.7),
+  };
+}
+
+// Helper to generate campaign config data
+function generateCampaignConfigData() {
+  return {
+    contractPending: faker.datatype.boolean(0.3),
+    orderConfirmationEnabled: faker.datatype.boolean(0.8),
+    confirmationTimeMinutes: faker.number.int({ min: 5, max: 60 }),
+    differentialFlow: faker.datatype.boolean(0.2),
+    blockOrdersDuringCampaign: faker.datatype.boolean(0.1),
+    delinquencyPolicy: faker.datatype.boolean(0.6) ? faker.lorem.sentence() : undefined,
+  };
+}
+
 async function main() {
   console.log('🌱 Starting seed with faker data...');
 
-  // Clear existing data in proper order (contracts first due to foreign keys)
+  // Clear existing data in proper order (campaigns and related data first due to foreign keys)
+  await prisma.campaignContact.deleteMany();
+  console.log('🗑️ Cleared existing campaign contacts');
+
+  await prisma.businessModel.deleteMany();
+  console.log('🗑️ Cleared existing business models');
+
+  await prisma.campaignConfig.deleteMany();
+  console.log('🗑️ Cleared existing campaign configs');
+
+  await prisma.campaign.deleteMany();
+  console.log('🗑️ Cleared existing campaigns');
+
+  await prisma.person.deleteMany();
+  console.log('🗑️ Cleared existing persons');
+
   await prisma.contract.deleteMany();
   console.log('🗑️ Cleared existing contracts');
 
@@ -291,6 +390,146 @@ async function main() {
     }
   }
 
+  // Create persons for campaign contacts
+  const createdPersons: any[] = [];
+  console.log('\n👥 Creating persons for campaign contacts...');
+
+  // Create 30-50 persons that can be used as campaign contacts
+  const personCount = faker.number.int({ min: 30, max: 50 });
+
+  for (let i = 0; i < personCount; i++) {
+    try {
+      const person = await prisma.person.create({
+        data: {
+          name: faker.person.fullName(),
+          email: faker.internet.email(),
+          phone: faker.helpers.arrayElement([
+            generateBrazilianPhone(),
+            generateBrazilianMobile(),
+          ]),
+        },
+      });
+
+      createdPersons.push(person);
+      console.log(`✓ Created person ${i + 1}: ${person.name}`);
+    } catch (error) {
+      console.warn(
+        `Failed to create person ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+
+  // Create campaigns with all related data
+  const createdCampaigns: any[] = [];
+  console.log('\n🎯 Creating campaigns...');
+
+  // Create 15-25 campaigns for random clients and contracts
+  const campaignCount = faker.number.int({ min: 15, max: 25 });
+
+  for (let i = 0; i < campaignCount; i++) {
+    const randomClient = faker.helpers.arrayElement(createdClients);
+    const creator = faker.helpers.arrayElement(users);
+
+    // 70% chance of having a contract
+    const hasContract = faker.datatype.boolean(0.7);
+    const clientContracts = createdContracts.filter(c => c.clientId === randomClient.id);
+    const randomContract = hasContract && clientContracts.length > 0
+      ? faker.helpers.arrayElement(clientContracts)
+      : null;
+
+    // Generate campaign dates
+    const startDate = faker.date.between({
+      from: new Date('2024-01-01'),
+      to: new Date('2025-06-30'),
+    });
+
+    const endDate = faker.date.between({
+      from: startDate,
+      to: new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000), // 1 year from start
+    });
+
+    const businessData = generateBusinessModelData();
+    const configData = generateCampaignConfigData();
+
+    // Select 1-3 contacts for this campaign
+    const contactCount = faker.number.int({ min: 1, max: 3 });
+    const selectedPersons = faker.helpers.arrayElements(createdPersons, contactCount);
+    const availableRoles = Object.values(ContactRole);
+
+    const campaignContacts = selectedPersons.map((person) => ({
+      personId: person.id,
+      role: faker.helpers.arrayElement(availableRoles),
+    }));
+
+    try {
+      const campaign = await prisma.campaign.create({
+        data: {
+          name: generateCampaignName(),
+          startDate,
+          endDate,
+          city: faker.helpers.arrayElement([
+            'São Paulo',
+            'Rio de Janeiro',
+            'Belo Horizonte',
+            'Brasília',
+            'Salvador',
+            'Fortaleza',
+            'Curitiba',
+            'Recife',
+            'Porto Alegre',
+            'Manaus',
+          ]),
+          type: faker.helpers.arrayElement(Object.values(CampaignType)),
+          branchType: faker.helpers.arrayElement(Object.values(BranchType)),
+          observations: faker.datatype.boolean(0.6) ? faker.lorem.paragraph() : undefined,
+          clientId: randomClient.id,
+          contractId: randomContract?.id,
+          createdById: creator.id,
+          contacts: {
+            create: campaignContacts,
+          },
+          business: {
+            create: businessData,
+          },
+          config: {
+            create: configData,
+          },
+        },
+        include: {
+          client: {
+            select: {
+              companyName: true,
+              fantasyName: true,
+            },
+          },
+          contract: {
+            select: {
+              name: true,
+            },
+          },
+          contacts: {
+            include: {
+              person: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      createdCampaigns.push(campaign);
+      console.log(
+        `✓ Created campaign ${i + 1}: ${campaign.name} for ${campaign.client.companyName}`,
+      );
+    } catch (error) {
+      console.warn(
+        `Failed to create campaign ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+
   console.log('✅ Seed completed successfully with faker data!');
   console.log('\n👥 Created users:');
   console.log(
@@ -318,6 +557,23 @@ async function main() {
   console.log('- Random assignment to clients');
   console.log('- Realistic contract names and partner companies');
   console.log('- Valid date ranges (start and end dates)');
+
+  console.log('\n👥 Created persons:');
+  console.log(`- Generated ${createdPersons.length} persons for campaign contacts`);
+  console.log('- Realistic names, emails, and Brazilian phone numbers');
+  console.log('- Available for assignment as campaign contacts with different roles');
+
+  console.log('\n🎯 Created campaigns:');
+  console.log(`- Generated ${createdCampaigns.length} campaigns`);
+  console.log('- Complete campaigns with all relationships:');
+  console.log('  • Client assignment (required)');
+  console.log('  • Contract assignment (~70% of campaigns)');
+  console.log('  • Campaign contacts (1-3 persons per campaign with roles)');
+  console.log('  • Business model configuration (payment, delivery, billing)');
+  console.log('  • Campaign configuration (order confirmation, flow settings)');
+  console.log('- Realistic campaign names, dates, and Brazilian cities');
+  console.log('- Various campaign types (INCENTIVO, TRADE, MKT, ONLINE, OFFLINE)');
+  console.log('- Branch types (MATRIZ, FILIAL) and observations');
 }
 
 main()
