@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { ClientsModule } from './clients/clients.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ContractsModule } from './contracts/contracts.module';
+import { CampaignsModule } from './campaigns/campaigns.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ContractsModule } from './contracts/contracts.module';
     AuthModule,
     ClientsModule,
     ContractsModule,
+    CampaignsModule,
   ],
   controllers: [],
   providers: [],
