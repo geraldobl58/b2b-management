@@ -12,7 +12,8 @@
   .MuiDrawer-root {
     @apply [all:unset];
   }
-  .MuiPickersLayout-root {
+  .MuiPickersLayout-root,
+  .MuiAutocomplete-popper {
     display: grid;
     grid-auto-columns: max-content auto max-content;
     grid-auto-rows: max-content auto max-content;
