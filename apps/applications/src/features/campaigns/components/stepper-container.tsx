@@ -98,7 +98,6 @@ export const StepperContainer = () => {
           name?: string;
           startDate?: string;
           endDate?: string;
-          city?: string;
           type?: string;
           branchType?: string;
         };
@@ -106,7 +105,6 @@ export const StepperContainer = () => {
           basicData?.name?.trim() &&
           basicData?.startDate &&
           basicData?.endDate &&
-          basicData?.city?.trim() &&
           basicData?.type &&
           basicData?.branchType
         );
@@ -141,6 +139,7 @@ export const StepperContainer = () => {
         return (
           <BasicDataStep
             data={campaignData.basicData}
+            clientId={campaignData.clientId || undefined}
             onChange={(data) => updateCampaignData("basicData", data)}
           />
         );
