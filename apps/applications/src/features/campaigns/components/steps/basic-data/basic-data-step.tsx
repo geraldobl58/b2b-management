@@ -1,39 +1,62 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import {
   Card,
   CardContent,
   Typography,
   TextField,
-  Grid,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
+  CircularProgress,
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DatePickerProvider } from "@/components/shared";
+
+import dayjs from "dayjs";
+import { useAuth } from "@/features/auth/hooks/use-auth";
+import { useClientById } from "@/features/clients/hooks/use-client";
 
 export interface BasicDataStepProps {
   data?: {
     name?: string;
     startDate?: string;
     endDate?: string;
-    city?: string;
     type?: "MKT" | "SALES" | "RETENTION" | "UPSELL";
     branchType?: "MATRIZ" | "FILIAL";
     observations?: string;
   };
-  onChange?: (data: any) => void;
+  clientId?: string; // ID do cliente para buscar os dados
+  onChange?: (data: {
+    name: string;
+    startDate: string;
+    endDate: string;
+    type: "MKT" | "SALES" | "RETENTION" | "UPSELL" | "";
+    branchType: "MATRIZ" | "FILIAL" | "";
+    observations: string;
+  }) => void;
 }
 
-export const BasicDataStep = ({ data, onChange }: BasicDataStepProps) => {
+export const BasicDataStep = ({
+  data,
+  clientId,
+  onChange,
+}: BasicDataStepProps) => {
+  // Hooks para buscar dados das APIs
+  const { user, isLoading: isLoadingUser } = useAuth();
+  const { data: clientData, isLoading: isLoadingClient } = useClientById(
+    clientId || ""
+  );
+
   const [formData, setFormData] = useState({
     name: data?.name || "",
     startDate: data?.startDate || "",
     endDate: data?.endDate || "",
-    city: data?.city || "",
-    type: data?.type || "" as "MKT" | "SALES" | "RETENTION" | "UPSELL" | "",
-    branchType: data?.branchType || "" as "MATRIZ" | "FILIAL" | "",
+    type: data?.type || ("" as "MKT" | "SALES" | "RETENTION" | "UPSELL" | ""),
+    branchType: data?.branchType || ("" as "MATRIZ" | "FILIAL" | ""),
     observations: data?.observations || "",
   });
 
@@ -50,7 +73,6 @@ export const BasicDataStep = ({ data, onChange }: BasicDataStepProps) => {
         name: data.name || "",
         startDate: data.startDate || "",
         endDate: data.endDate || "",
-        city: data.city || "",
         type: data.type || "",
         branchType: data.branchType || "",
         observations: data.observations || "",
@@ -70,13 +92,6 @@ export const BasicDataStep = ({ data, onChange }: BasicDataStepProps) => {
     { value: "FILIAL", label: "Filial" },
   ];
 
-  // Função para formatar data para input date
-  const formatDateForInput = (dateString: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toISOString().split('T')[0];
-  };
-
   // Função para validar se data final é maior que inicial
   const isEndDateValid = () => {
     if (!formData.startDate || !formData.endDate) return true;
@@ -93,8 +108,8 @@ export const BasicDataStep = ({ data, onChange }: BasicDataStepProps) => {
           Defina as informações básicas da campanha.
         </Typography>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between gap-4">
             <TextField
               fullWidth
               label="Nome da Campanha"
@@ -102,11 +117,67 @@ export const BasicDataStep = ({ data, onChange }: BasicDataStepProps) => {
               onChange={(e) => handleChange("name", e.target.value)}
               required
               error={!formData.name.trim()}
-              helperText={!formData.name.trim() ? "Nome da campanha é obrigatório" : ""}
+              helperText={
+                !formData.name.trim() ? "Nome da campanha é obrigatório" : ""
+              }
             />
-          </Grid>
+            <DatePickerProvider>
+              <DatePicker
+                label="Data de Início"
+                value={formData.startDate ? dayjs(formData.startDate) : null}
+                onChange={(newValue) => {
+                  const dateString =
+                    newValue && newValue.isValid()
+                      ? newValue.toISOString()
+                      : "";
+                  handleChange("startDate", dateString);
+                }}
+                minDate={dayjs()}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    required: true,
+                    error: !formData.startDate,
+                    helperText: !formData.startDate
+                      ? "Data de início é obrigatória"
+                      : "",
+                    size: "medium",
+                  },
+                }}
+              />
+            </DatePickerProvider>
+            <DatePickerProvider>
+              <DatePicker
+                label="Data de Fim"
+                value={formData.endDate ? dayjs(formData.endDate) : null}
+                onChange={(newValue) => {
+                  const dateString =
+                    newValue && newValue.isValid()
+                      ? newValue.toISOString()
+                      : "";
+                  handleChange("endDate", dateString);
+                }}
+                minDate={
+                  formData.startDate ? dayjs(formData.startDate) : dayjs()
+                }
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    required: true,
+                    error: !formData.endDate || !isEndDateValid(),
+                    helperText: !formData.endDate
+                      ? "Data de fim é obrigatória"
+                      : !isEndDateValid()
+                        ? "Data de fim deve ser maior ou igual à data de início"
+                        : "",
+                    size: "medium",
+                  },
+                }}
+              />
+            </DatePickerProvider>
+          </div>
 
-          <Grid item xs={12} md={6}>
+          <div className="flex items-center justify-between gap-4">
             <FormControl fullWidth required error={!formData.type}>
               <InputLabel>Tipo de Campanha</InputLabel>
               <Select
@@ -121,9 +192,6 @@ export const BasicDataStep = ({ data, onChange }: BasicDataStepProps) => {
                 ))}
               </Select>
             </FormControl>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
             <FormControl fullWidth required error={!formData.branchType}>
               <InputLabel>Tipo de Filial</InputLabel>
               <Select
@@ -138,65 +206,9 @@ export const BasicDataStep = ({ data, onChange }: BasicDataStepProps) => {
                 ))}
               </Select>
             </FormControl>
-          </Grid>
+          </div>
 
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Cidade"
-              value={formData.city}
-              onChange={(e) => handleChange("city", e.target.value)}
-              required
-              error={!formData.city.trim()}
-              helperText={!formData.city.trim() ? "Cidade é obrigatória" : ""}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            {/* Campo vazio para alinhamento */}
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Data de Início"
-              type="date"
-              value={formatDateForInput(formData.startDate)}
-              onChange={(e) => handleChange("startDate", e.target.value)}
-              required
-              error={!formData.startDate}
-              helperText={!formData.startDate ? "Data de início é obrigatória" : ""}
-              InputLabelProps={{ shrink: true }}
-              inputProps={{
-                min: new Date().toISOString().split('T')[0], // Não permitir datas passadas
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Data de Fim"
-              type="date"
-              value={formatDateForInput(formData.endDate)}
-              onChange={(e) => handleChange("endDate", e.target.value)}
-              required
-              error={!formData.endDate || !isEndDateValid()}
-              helperText={
-                !formData.endDate
-                  ? "Data de fim é obrigatória"
-                  : !isEndDateValid()
-                    ? "Data de fim deve ser maior ou igual à data de início"
-                    : ""
-              }
-              InputLabelProps={{ shrink: true }}
-              inputProps={{
-                min: formData.startDate || new Date().toISOString().split('T')[0],
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
+          <div>
             <TextField
               fullWidth
               label="Observações"
@@ -205,13 +217,131 @@ export const BasicDataStep = ({ data, onChange }: BasicDataStepProps) => {
               value={formData.observations}
               onChange={(e) => handleChange("observations", e.target.value)}
               placeholder="Adicione observações sobre a campanha (opcional)"
-              inputProps={{
-                maxLength: 1000,
+              slotProps={{
+                htmlInput: {
+                  maxLength: 1000,
+                },
               }}
               helperText={`${formData.observations.length}/1000 caracteres`}
             />
-          </Grid>
-        </Grid>
+          </div>
+
+          <div className="mt-6">
+            <Typography variant="h4" gutterBottom>
+              Informações do Cliente
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Dados do cliente associado à campanha.
+            </Typography>
+            <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+              {isLoadingClient ? (
+                <div className="col-span-2 flex items-center justify-center py-4">
+                  <CircularProgress size={24} sx={{ mr: 2 }} />
+                  <Typography variant="body2">
+                    Carregando dados do cliente...
+                  </Typography>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: "bold", color: "text.secondary" }}
+                    >
+                      CNPJ
+                    </Typography>
+                    <Typography variant="body1">
+                      {clientData?.cnpj || "Não informado"}
+                    </Typography>
+                  </div>
+                  <div>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: "bold", color: "text.secondary" }}
+                    >
+                      Nome Fantasia
+                    </Typography>
+                    <Typography variant="body1">
+                      {clientData?.fantasyName || "Não informado"}
+                    </Typography>
+                  </div>
+                  <div>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: "bold", color: "text.secondary" }}
+                    >
+                      Razão Social
+                    </Typography>
+                    <Typography variant="body1">
+                      {clientData?.companyName || "Não informado"}
+                    </Typography>
+                  </div>
+                  <div>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: "bold", color: "text.secondary" }}
+                    >
+                      Endereço Principal
+                    </Typography>
+                    <Typography variant="body1">
+                      {clientData?.addresses && clientData.addresses.length > 0
+                        ? `${clientData.addresses[0].street}, ${clientData.addresses[0].city} - ${clientData.addresses[0].state}`
+                        : "Não informado"}
+                    </Typography>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <Typography variant="h4" gutterBottom>
+              Responsável pela Campanha
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Dados do usuário atualmente logado no sistema.
+            </Typography>
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <div className="mt-2">
+                {isLoadingUser ? (
+                  <div className="flex items-center">
+                    <CircularProgress size={20} sx={{ mr: 1 }} />
+                    <Typography variant="body2">
+                      Carregando dados do usuário...
+                    </Typography>
+                  </div>
+                ) : (
+                  <>
+                    <Typography variant="body1" sx={{ fontWeight: "medium" }}>
+                      Usuário logado: {user?.name || "Usuário não identificado"}
+                    </Typography>
+                    {user?.email && (
+                      <Typography variant="body2" color="text.secondary">
+                        {user.email}
+                      </Typography>
+                    )}
+                    {user?.role && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          backgroundColor: "primary.main",
+                          color: "white",
+                          px: 1,
+                          py: 0.5,
+                          borderRadius: 1,
+                          display: "inline-block",
+                          mt: 1,
+                        }}
+                      >
+                        {user.role}
+                      </Typography>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
