@@ -13,8 +13,8 @@ import { useMounted } from "@/hooks/use-mounted";
 import { useMemo } from "react";
 
 export interface ContractSelectionStepProps {
-  onContractSelect?: (contractId: string | null) => void;
-  selectedContractId?: string | null;
+  onContractSelect?: (contractIds: string[]) => void;
+  selectedContractIds?: string[];
   clientId?: string | null;
 }
 
@@ -28,7 +28,7 @@ interface ContractOption {
 
 export const ContractSelectionStep = ({
   onContractSelect,
-  selectedContractId,
+  selectedContractIds = [],
   clientId,
 }: ContractSelectionStepProps) => {
   const mounted = useMounted();
@@ -53,16 +53,17 @@ export const ContractSelectionStep = ({
         endDate: contract.endDate,
       }));
   }, [contracts, clientId]);
-  const selectedContract = contractOptions.find(
-    (contract) => contract.value === selectedContractId
-  ) || null;
+
+  const selectedContracts = contractOptions.filter((contract) =>
+    selectedContractIds.includes(contract.value)
+  );
 
   const handleContractChange = (
     _: React.SyntheticEvent,
-    value: ContractOption | null
+    values: ContractOption[]
   ) => {
     if (onContractSelect) {
-      onContractSelect(value?.value || null);
+      onContractSelect(values.map((v) => v.value));
     }
   };
 
@@ -70,34 +71,39 @@ export const ContractSelectionStep = ({
     <Card sx={{ mt: 2, mb: 2 }}>
       <CardContent>
         <Typography variant="h4" gutterBottom>
-          Selecione um Contrato
+          Selecione os Contratos
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Escolha o contrato que será usado como base para esta campanha.
+          Escolha os contratos que serão usados como base para esta campanha.
         </Typography>
 
         {clientId ? (
           <>
             <Autocomplete
               fullWidth
+              multiple
               disablePortal
               options={contractOptions}
-              value={selectedContract}
+              value={selectedContracts}
               onChange={handleContractChange}
               loading={mounted && isLoadingContracts}
               getOptionLabel={(option) => option.label}
-              isOptionEqualToValue={(option, value) => option.value === value.value}
+              isOptionEqualToValue={(option, value) =>
+                option.value === value.value
+              }
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Selecione um contrato"
+                  label="Selecione os contratos"
                   required
                   slotProps={{
                     input: {
                       ...params.InputProps,
                       endAdornment: (
                         <>
-                          {mounted && isLoadingContracts ? <CircularProgress color="inherit" size={20} /> : null}
+                          {mounted && isLoadingContracts ? (
+                            <CircularProgress color="inherit" size={20} />
+                          ) : null}
                           {params.InputProps.endAdornment}
                         </>
                       ),
@@ -110,7 +116,9 @@ export const ContractSelectionStep = ({
                   <div>
                     <div>{option.label}</div>
                     <Typography variant="caption" color="text.secondary">
-                      Parceiro: {option.partner} • Período: {new Date(option.startDate).toLocaleDateString('pt-BR')} - {new Date(option.endDate).toLocaleDateString('pt-BR')}
+                      Parceiro: {option.partner} • Período:{" "}
+                      {new Date(option.startDate).toLocaleDateString("pt-BR")} -{" "}
+                      {new Date(option.endDate).toLocaleDateString("pt-BR")}
                     </Typography>
                   </div>
                 </li>
@@ -130,17 +138,22 @@ export const ContractSelectionStep = ({
               </Typography>
             )}
 
-            {selectedContractId && (
+            {selectedContractIds.length > 0 && (
               <Typography variant="body2" color="success.main" sx={{ mt: 2 }}>
-                ✓ Contrato selecionado: {selectedContract?.label}
+                ✓ {selectedContractIds.length} contrato(s) selecionado(s):{" "}
+                {selectedContracts.map((c) => c.label).join(", ")}
               </Typography>
             )}
 
-            {mounted && !isLoadingContracts && !error && contractOptions.length === 0 && clientId && (
-              <Typography variant="body2" color="warning.main" sx={{ mt: 2 }}>
-                Nenhum contrato encontrado para este cliente.
-              </Typography>
-            )}
+            {mounted &&
+              !isLoadingContracts &&
+              !error &&
+              contractOptions.length === 0 &&
+              clientId && (
+                <Typography variant="body2" color="warning.main" sx={{ mt: 2 }}>
+                  Nenhum contrato encontrado para este cliente.
+                </Typography>
+              )}
           </>
         ) : (
           <Typography variant="body2" color="warning.main">
