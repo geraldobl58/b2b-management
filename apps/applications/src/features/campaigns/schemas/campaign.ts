@@ -135,7 +135,9 @@ export const createCampaignSchema = z
       // Validar se estimativa anual é consistente com mensal
       const monthlyAnnualized = data.business.estimateMonthly * 12;
       const tolerance = monthlyAnnualized * 0.2; // 20% de tolerância
-      return Math.abs(data.business.estimateAnnual - monthlyAnnualized) <= tolerance;
+      return (
+        Math.abs(data.business.estimateAnnual - monthlyAnnualized) <= tolerance
+      );
     },
     {
       message: "Estimativa anual deve ser consistente com a estimativa mensal",

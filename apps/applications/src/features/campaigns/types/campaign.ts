@@ -23,7 +23,7 @@ export interface ContactResponse extends Contact {
 }
 
 export interface Business {
-  paymentMethod: "CREDIT_CARD" | "BANK_TRANSFER" | "PIX" | "BOLETO";
+  paymentMethod: "CREDIT_CARD" | "DEBIT_CARD" | "BANK_SLIP" | "PIX" | "CASH";
   upfront: boolean;
   daysToInvoice: number;
   notes: string;

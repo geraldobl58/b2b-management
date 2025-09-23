@@ -17,8 +17,8 @@ import {
 import { useState, useEffect } from "react";
 
 enum PaymentMethod {
-  CREDIT_CARD = "CREDIT_CARD",
-  BANK_TRANSFER = "BANK_TRANSFER",
+  CREDIT_CARD = "Cartão de Credito",
+  BANK_TRANSFER = "Tranferiencia",
   PIX = "PIX",
   BOLETO = "BOLETO",
 }
@@ -303,7 +303,8 @@ export const BusinessModelStep = ({
                 </Select>
               </FormControl>
 
-              {(formData.deliveryType === DeliveryType.PHYSICAL || formData.deliveryType === DeliveryType.HYBRID) && (
+              {(formData.deliveryType === DeliveryType.PHYSICAL ||
+                formData.deliveryType === DeliveryType.HYBRID) && (
                 <TextField
                   fullWidth
                   label="Dias para Entrega"
@@ -331,7 +332,8 @@ export const BusinessModelStep = ({
                 label="Serviços adicionais"
               />
 
-              {(formData.deliveryType === DeliveryType.PHYSICAL || formData.deliveryType === DeliveryType.HYBRID) && (
+              {(formData.deliveryType === DeliveryType.PHYSICAL ||
+                formData.deliveryType === DeliveryType.HYBRID) && (
                 <FormControlLabel
                   control={
                     <Switch
