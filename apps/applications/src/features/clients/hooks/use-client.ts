@@ -298,7 +298,7 @@ export const useClientById = (id: string) => {
         throw error;
       }
     },
-    enabled: cookieUtils.hasToken(),
+    enabled: !!id && cookieUtils.hasToken(),
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
