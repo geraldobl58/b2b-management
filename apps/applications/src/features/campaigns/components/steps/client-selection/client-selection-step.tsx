@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   Autocomplete,
   Card,
@@ -10,7 +11,6 @@ import {
 } from "@mui/material";
 import { useClient } from "@/features/clients/hooks/use-client";
 import { useMounted } from "@/hooks/use-mounted";
-import { useMemo } from "react";
 
 export interface ClientSelectionStepProps {
   onClientSelect?: (clientId: string | null) => void;
@@ -39,9 +39,13 @@ export const ClientSelectionStep = ({
     }));
   }, [clients]);
 
-  const selectedClient = clientOptions.find(client => client.value === selectedClientId) || null;
+  const selectedClient =
+    clientOptions.find((client) => client.value === selectedClientId) || null;
 
-  const handleClientChange = (_: React.SyntheticEvent, value: ClientOption | null) => {
+  const handleClientChange = (
+    _: React.SyntheticEvent,
+    value: ClientOption | null
+  ) => {
     if (onClientSelect) {
       onClientSelect(value?.value || null);
     }
@@ -76,7 +80,9 @@ export const ClientSelectionStep = ({
                   ...params.InputProps,
                   endAdornment: (
                     <>
-                      {mounted && isLoadingClients ? <CircularProgress color="inherit" size={20} /> : null}
+                      {mounted && isLoadingClients ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
                       {params.InputProps.endAdornment}
                     </>
                   ),
