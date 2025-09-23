@@ -1,5 +1,5 @@
 import { Header } from "@/components/header";
-import { StepperContainer } from "@/features/campaigns/components/stepper-container";
+import { CampaignCreation } from "@/features/campaigns/components";
 import { Box, Button } from "@mui/material";
 import { PlusIcon } from "lucide-react";
 
@@ -18,7 +18,7 @@ const Campaign = () => {
           </>
         }
       />
-      <StepperContainer />
+      <CampaignCreation />
     </Box>
   );
 };

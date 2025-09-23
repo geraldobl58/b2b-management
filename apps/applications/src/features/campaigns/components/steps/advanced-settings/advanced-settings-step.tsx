@@ -1,308 +1,295 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import {
   Card,
   CardContent,
   Typography,
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   TextField,
   FormControlLabel,
   Switch,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
+  Box,
+  Divider,
   Slider,
-  Box
+  Alert,
+  AlertTitle,
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { useState } from "react";
 
 export interface AdvancedSettingsStepProps {
   data?: {
-    automation?: {
-      enabled?: boolean;
-      triggers?: string[];
-      conditions?: string[];
-    };
-    performance?: {
-      maxConcurrentExecution?: number;
-      timeout?: number;
-      retryAttempts?: number;
-    };
-    notifications?: {
-      emailAlerts?: boolean;
-      smsAlerts?: boolean;
-      webhookUrl?: string;
-    };
-    analytics?: {
-      trackingEnabled?: boolean;
-      customEvents?: boolean;
-      dataRetention?: number;
-    };
+    contractPending?: boolean;
+    orderConfirmationEnabled?: boolean;
+    confirmationTimeMinutes?: number;
+    differentialFlow?: boolean;
+    blockOrdersDuringCampaign?: boolean;
+    delinquencyPolicy?: string;
   };
-  onChange?: (data: any) => void;
+  onChange?: (data: {
+    contractPending: boolean;
+    orderConfirmationEnabled: boolean;
+    confirmationTimeMinutes: number;
+    differentialFlow: boolean;
+    blockOrdersDuringCampaign: boolean;
+    delinquencyPolicy: string;
+  }) => void;
 }
 
-export const AdvancedSettingsStep = ({ data, onChange }: AdvancedSettingsStepProps) => {
+const initialFormData = {
+  contractPending: false,
+  orderConfirmationEnabled: true,
+  confirmationTimeMinutes: 10,
+  differentialFlow: false,
+  blockOrdersDuringCampaign: false,
+  delinquencyPolicy: "",
+};
+
+export const AdvancedSettingsStep = ({
+  data,
+  onChange,
+}: AdvancedSettingsStepProps) => {
   const [formData, setFormData] = useState({
-    automation: {
-      enabled: data?.automation?.enabled || false,
-      triggers: data?.automation?.triggers || [],
-      conditions: data?.automation?.conditions || [],
-    },
-    performance: {
-      maxConcurrentExecution: data?.performance?.maxConcurrentExecution || 10,
-      timeout: data?.performance?.timeout || 30,
-      retryAttempts: data?.performance?.retryAttempts || 3,
-    },
-    notifications: {
-      emailAlerts: data?.notifications?.emailAlerts || true,
-      smsAlerts: data?.notifications?.smsAlerts || false,
-      webhookUrl: data?.notifications?.webhookUrl || "",
-    },
-    analytics: {
-      trackingEnabled: data?.analytics?.trackingEnabled || true,
-      customEvents: data?.analytics?.customEvents || false,
-      dataRetention: data?.analytics?.dataRetention || 90,
-    },
+    ...initialFormData,
+    ...data,
   });
 
-  const handleChange = (section: string, field: string, value: any) => {
-    const newData = {
-      ...formData,
-      [section]: {
-        ...formData[section as keyof typeof formData],
-        [field]: value,
-      },
-    };
+  const handleChange = (field: string, value: string | number | boolean) => {
+    const newData = { ...formData, [field]: value };
     setFormData(newData);
     onChange?.(newData);
   };
 
+  // Atualizar form data quando props mudam
+  useEffect(() => {
+    if (data) {
+      setFormData({
+        ...initialFormData,
+        ...data,
+      });
+    }
+  }, [data]);
+
+  // Marcadores para o tempo de confirmação em minutos
+  const timeMarks = [
+    { value: 5, label: "5min" },
+    { value: 10, label: "10min" },
+    { value: 15, label: "15min" },
+    { value: 30, label: "30min" },
+    { value: 60, label: "1h" },
+  ];
+
   return (
     <Card sx={{ mt: 2, mb: 2 }}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h4" gutterBottom>
           Configurações Avançadas
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Configure aspectos avançados de automação, performance e monitoramento.
+        <Typography variant="body2" sx={{ mb: 3 }}>
+          Configure opções avançadas para otimizar o comportamento da campanha.
         </Typography>
 
-        <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="subtitle1">Automação</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.automation.enabled}
-                      onChange={(e) =>
-                        handleChange("automation", "enabled", e.target.checked)
-                      }
-                    />
-                  }
-                  label="Habilitar Automação"
-                />
-              </Grid>
-              {formData.automation.enabled && (
-                <>
-                  <Grid item xs={12} md={6}>
-                    <FormControl fullWidth>
-                      <InputLabel>Gatilhos</InputLabel>
-                      <Select
-                        multiple
-                        value={formData.automation.triggers}
-                        label="Gatilhos"
-                        onChange={(e) =>
-                          handleChange("automation", "triggers", e.target.value)
-                        }
-                      >
-                        <MenuItem value="time">Baseado em Tempo</MenuItem>
-                        <MenuItem value="event">Baseado em Evento</MenuItem>
-                        <MenuItem value="condition">Baseado em Condição</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <FormControl fullWidth>
-                      <InputLabel>Condições</InputLabel>
-                      <Select
-                        multiple
-                        value={formData.automation.conditions}
-                        label="Condições"
-                        onChange={(e) =>
-                          handleChange("automation", "conditions", e.target.value)
-                        }
-                      >
-                        <MenuItem value="user_action">Ação do Usuário</MenuItem>
-                        <MenuItem value="data_threshold">Limite de Dados</MenuItem>
-                        <MenuItem value="time_window">Janela de Tempo</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                </>
-              )}
-            </Grid>
-          </AccordionDetails>
-        </Accordion>
+        <div className="space-y-6">
+          {/* Seção de Contratos */}
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Gestão de Contratos
+            </Typography>
+            <div className="mt-3">
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.contractPending}
+                    onChange={(e) =>
+                      handleChange("contractPending", e.target.checked)
+                    }
+                  />
+                }
+                label="Contrato pendente"
+              />
+              <Typography variant="body2" sx={{ ml: 4, mt: 1 }}>
+                Indica se há pendências contratuais que precisam ser resolvidas
+                antes do início da campanha
+              </Typography>
+            </div>
+          </Box>
 
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="subtitle1">Performance</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <Typography gutterBottom>
-                  Execuções Concorrentes: {formData.performance.maxConcurrentExecution}
+          <Divider />
+
+          {/* Seção de Confirmação de Pedidos */}
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Confirmação de Pedidos
+            </Typography>
+
+            <div className="mt-3">
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.orderConfirmationEnabled}
+                    onChange={(e) =>
+                      handleChange("orderConfirmationEnabled", e.target.checked)
+                    }
+                  />
+                }
+                label="Habilitar confirmação de pedidos"
+              />
+              <Typography variant="body2" sx={{ ml: 4, mt: 1 }}>
+                Quando ativado, os pedidos precisarão ser confirmados dentro do
+                tempo limite
+              </Typography>
+            </div>
+
+            {formData.orderConfirmationEnabled && (
+              <Box sx={{ mt: 4, px: 2 }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Tempo limite para confirmação:{" "}
+                  {formData.confirmationTimeMinutes} minutos
                 </Typography>
                 <Slider
-                  value={formData.performance.maxConcurrentExecution}
-                  onChange={(_, value) =>
-                    handleChange("performance", "maxConcurrentExecution", value)
+                  value={formData.confirmationTimeMinutes}
+                  onChange={(_, newValue) =>
+                    handleChange("confirmationTimeMinutes", newValue as number)
                   }
-                  min={1}
-                  max={50}
-                  marks
+                  min={5}
+                  max={60}
+                  step={5}
+                  marks={timeMarks}
                   valueLabelDisplay="auto"
+                  valueLabelFormat={(value) => `${value}min`}
+                  sx={{ mt: 2 }}
                 />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Timeout (segundos)"
-                  type="number"
-                  value={formData.performance.timeout}
-                  onChange={(e) =>
-                    handleChange("performance", "timeout", Number(e.target.value))
-                  }
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Tentativas de Retry"
-                  type="number"
-                  value={formData.performance.retryAttempts}
-                  onChange={(e) =>
-                    handleChange("performance", "retryAttempts", Number(e.target.value))
-                  }
-                />
-              </Grid>
-            </Grid>
-          </AccordionDetails>
-        </Accordion>
-
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="subtitle1">Notificações</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.notifications.emailAlerts}
-                      onChange={(e) =>
-                        handleChange("notifications", "emailAlerts", e.target.checked)
-                      }
-                    />
-                  }
-                  label="Alertas por Email"
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.notifications.smsAlerts}
-                      onChange={(e) =>
-                        handleChange("notifications", "smsAlerts", e.target.checked)
-                      }
-                    />
-                  }
-                  label="Alertas por SMS"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Webhook URL"
-                  value={formData.notifications.webhookUrl}
-                  onChange={(e) =>
-                    handleChange("notifications", "webhookUrl", e.target.value)
-                  }
-                  placeholder="https://api.exemplo.com/webhook"
-                />
-              </Grid>
-            </Grid>
-          </AccordionDetails>
-        </Accordion>
-
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="subtitle1">Analytics</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.analytics.trackingEnabled}
-                      onChange={(e) =>
-                        handleChange("analytics", "trackingEnabled", e.target.checked)
-                      }
-                    />
-                  }
-                  label="Habilitar Tracking"
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.analytics.customEvents}
-                      onChange={(e) =>
-                        handleChange("analytics", "customEvents", e.target.checked)
-                      }
-                    />
-                  }
-                  label="Eventos Customizados"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Typography gutterBottom>
-                  Retenção de Dados: {formData.analytics.dataRetention} dias
+                <Typography variant="body2" sx={{ mt: 2 }}>
+                  Define quanto tempo o cliente tem para confirmar um pedido
+                  após a criação
                 </Typography>
-                <Slider
-                  value={formData.analytics.dataRetention}
-                  onChange={(_, value) =>
-                    handleChange("analytics", "dataRetention", value)
+              </Box>
+            )}
+          </Box>
+
+          <Divider />
+
+          {/* Seção de Fluxo de Trabalho */}
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Fluxo de Trabalho
+            </Typography>
+
+            <div className="space-y-4 mt-3">
+              <div>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.differentialFlow}
+                      onChange={(e) =>
+                        handleChange("differentialFlow", e.target.checked)
+                      }
+                    />
                   }
-                  min={30}
-                  max={365}
-                  marks={[
-                    { value: 30, label: "30d" },
-                    { value: 90, label: "90d" },
-                    { value: 180, label: "180d" },
-                    { value: 365, label: "1 ano" },
-                  ]}
-                  valueLabelDisplay="auto"
+                  label="Fluxo diferenciado"
                 />
-              </Grid>
-            </Grid>
-          </AccordionDetails>
-        </Accordion>
+                <Typography variant="body2" sx={{ ml: 4, mt: 1 }}>
+                  Ativa um fluxo de trabalho especial com regras customizadas
+                  para esta campanha
+                </Typography>
+              </div>
+
+              <div>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.blockOrdersDuringCampaign}
+                      onChange={(e) =>
+                        handleChange(
+                          "blockOrdersDuringCampaign",
+                          e.target.checked
+                        )
+                      }
+                    />
+                  }
+                  label="Bloquear pedidos durante a campanha"
+                />
+                <Typography variant="body2" sx={{ ml: 4, mt: 1 }}>
+                  Impede a criação de novos pedidos enquanto a campanha estiver
+                  ativa
+                </Typography>
+              </div>
+            </div>
+
+            {formData.blockOrdersDuringCampaign && (
+              <Alert severity="warning" sx={{ mt: 3 }}>
+                <AlertTitle>Atenção</AlertTitle>
+                Com esta opção ativada, nenhum pedido poderá ser criado durante
+                o período da campanha. Certifique-se de que isso está alinhado
+                com os objetivos da campanha.
+              </Alert>
+            )}
+          </Box>
+
+          <Divider />
+
+          {/* Seção de Políticas */}
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Políticas e Regras
+            </Typography>
+
+            <TextField
+              fullWidth
+              label="Política de Inadimplência"
+              multiline
+              rows={4}
+              value={formData.delinquencyPolicy}
+              onChange={(e) =>
+                handleChange("delinquencyPolicy", e.target.value)
+              }
+              placeholder="Defina as regras e procedimentos para casos de inadimplência (opcional)"
+              slotProps={{
+                htmlInput: {
+                  maxLength: 1000,
+                },
+              }}
+              helperText={`${formData.delinquencyPolicy.length}/1000 caracteres`}
+              sx={{ mt: 2 }}
+            />
+            <Typography variant="body2" sx={{ mt: 2 }}>
+              Especifique como serão tratados os casos de inadimplência,
+              incluindo prazos, penalidades e procedimentos de cobrança
+            </Typography>
+          </Box>
+
+          {/* Resumo das Configurações */}
+          <Box sx={{ mt: 4, p: 3, bgcolor: "grey.50", borderRadius: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Resumo das Configurações
+            </Typography>
+            <div className="space-y-2">
+              <Typography variant="body2">
+                <strong>Contrato:</strong>{" "}
+                {formData.contractPending ? "Pendente" : "Aprovado"}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Confirmação de Pedidos:</strong>{" "}
+                {formData.orderConfirmationEnabled
+                  ? "Habilitada"
+                  : "Desabilitada"}
+                {formData.orderConfirmationEnabled &&
+                  ` (${formData.confirmationTimeMinutes} min)`}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Fluxo Diferenciado:</strong>{" "}
+                {formData.differentialFlow ? "Ativado" : "Desativado"}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Bloqueio de Pedidos:</strong>{" "}
+                {formData.blockOrdersDuringCampaign ? "Ativado" : "Desativado"}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Política de Inadimplência:</strong>{" "}
+                {formData.delinquencyPolicy ? "Definida" : "Não definida"}
+              </Typography>
+            </div>
+          </Box>
+        </div>
       </CardContent>
     </Card>
   );

@@ -6,7 +6,7 @@ import Step from "@mui/material/Step";
 import StepButton from "@mui/material/StepButton";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ClientSelectionStep,
   ContractSelectionStep,
@@ -14,6 +14,16 @@ import {
   AdvancedSettingsStep,
   BusinessModelStep,
 } from "./steps";
+import { useCampaign } from "@/features/campaigns/hooks/use-campaign";
+import {
+  Card,
+  CardContent,
+  Alert,
+  AlertTitle,
+  CircularProgress,
+  Snackbar,
+} from "@mui/material";
+import { useCampaignForm } from "@/features/campaigns/contexts";
 
 const steps = [
   "Identifique o Cliente",
@@ -21,6 +31,7 @@ const steps = [
   "Dados Básicos",
   "Modelo de Negócio",
   "Configurações Avançadas",
+  "Finalizar e Revisar",
 ];
 
 export const StepperContainer = () => {
@@ -29,14 +40,54 @@ export const StepperContainer = () => {
     [k: number]: boolean;
   }>({});
 
-  // Form data state
-  const [campaignData, setCampaignData] = useState({
-    clientId: null as string | null,
-    contractIds: [] as string[],
-    basicData: {},
-    businessModel: {},
-    advancedSettings: {},
-  });
+  // Estados para feedback do usuário
+  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
+  const [showErrorSnackbar, setShowErrorSnackbar] = useState(false);
+
+  // Hook para criar campanha
+  const { createCampaign, isCreating, createCampaignError } = useCampaign();
+
+  // Hook do contexto da campanha
+  const {
+    campaignData,
+    updateClientId,
+    updateContractIds,
+    updateBasicData,
+    updateBusinessModel,
+    updateAdvancedSettings,
+    isStepValid,
+    resetForm,
+    toCampaignPayload,
+  } = useCampaignForm();
+
+  // Efeito para monitorar o estado da criação da campanha
+  useEffect(() => {
+    if (createCampaignError) {
+      setShowErrorSnackbar(true);
+      setShowSuccessSnackbar(false);
+    } else if (!isCreating && showSuccessSnackbar === false) {
+      // Se não está criando e não tem erro, pode ter sido um sucesso
+      // Mas só mostra se teve uma tentativa anterior de criação
+      const wasCreating = localStorage.getItem('campaign-creating');
+      if (wasCreating === 'true') {
+        setShowSuccessSnackbar(true);
+        setShowErrorSnackbar(false);
+        localStorage.removeItem('campaign-creating');
+
+        // Resetar form após sucesso (opcional)
+        setTimeout(() => {
+          resetForm();
+          setActiveStep(0);
+          setCompleted({});
+        }, 2000);
+      }
+    }
+
+    // Marcar que está criando para rastrear mudanças de estado
+    if (isCreating) {
+      localStorage.setItem('campaign-creating', 'true');
+    }
+  }, [isCreating, createCampaignError, resetForm, showSuccessSnackbar]);
 
   const totalSteps = () => {
     return steps.length;
@@ -59,7 +110,7 @@ export const StepperContainer = () => {
       isLastStep() && !allStepsCompleted()
         ? // It's the last step, but not all steps have been completed,
           // find the first step that has been completed
-          steps.findIndex((step, i) => !(i in completed))
+          steps.findIndex((_, i) => !(i in completed))
         : activeStep + 1;
     setActiveStep(newActiveStep);
   };
@@ -71,46 +122,17 @@ export const StepperContainer = () => {
   const handleReset = () => {
     setActiveStep(0);
     setCompleted({});
-    setCampaignData({
-      clientId: null,
-      contractIds: [],
-      basicData: {},
-      businessModel: {},
-      advancedSettings: {},
-    });
+    resetForm();
   };
 
-  const updateCampaignData = (section: string, data: unknown) => {
-    setCampaignData((prev) => ({
-      ...prev,
-      [section]: data,
-    }));
-  };
-
-  const isStepValid = () => {
-    switch (activeStep) {
-      case 0:
-        return !!campaignData.clientId;
-      case 1:
-        return campaignData.contractIds.length > 0;
-      case 2: {
-        const basicData = campaignData.basicData as {
-          name?: string;
-          startDate?: string;
-          endDate?: string;
-          type?: string;
-          branchType?: string;
-        };
-        return !!(
-          basicData?.name?.trim() &&
-          basicData?.startDate &&
-          basicData?.endDate &&
-          basicData?.type &&
-          basicData?.branchType
-        );
-      }
-      default:
-        return true;
+  // Função para finalizar e criar a campanha
+  const handleFinalizeCampaign = () => {
+    try {
+      const campaignPayload = toCampaignPayload();
+      console.log("Criando campanha com dados:", campaignPayload);
+      createCampaign(campaignPayload);
+    } catch (error) {
+      console.error("Erro ao criar campanha:", error);
     }
   };
 
@@ -120,9 +142,7 @@ export const StepperContainer = () => {
         return (
           <ClientSelectionStep
             selectedClientId={campaignData.clientId}
-            onClientSelect={(clientId) =>
-              updateCampaignData("clientId", clientId)
-            }
+            onClientSelect={updateClientId}
           />
         );
       case 1:
@@ -130,9 +150,7 @@ export const StepperContainer = () => {
           <ContractSelectionStep
             clientId={campaignData.clientId}
             selectedContractIds={campaignData.contractIds}
-            onContractSelect={(contractIds) =>
-              updateCampaignData("contractIds", contractIds)
-            }
+            onContractSelect={updateContractIds}
           />
         );
       case 2:
@@ -140,22 +158,78 @@ export const StepperContainer = () => {
           <BasicDataStep
             data={campaignData.basicData}
             clientId={campaignData.clientId || undefined}
-            onChange={(data) => updateCampaignData("basicData", data)}
+            onChange={updateBasicData}
           />
         );
       case 3:
         return (
           <BusinessModelStep
             data={campaignData.businessModel}
-            onChange={(data) => updateCampaignData("businessModel", data)}
+            onChange={updateBusinessModel}
           />
         );
       case 4:
         return (
           <AdvancedSettingsStep
             data={campaignData.advancedSettings}
-            onChange={(data) => updateCampaignData("advancedSettings", data)}
+            onChange={updateAdvancedSettings}
           />
+        );
+      case 5:
+        return (
+          <Card sx={{ mt: 2, mb: 2 }}>
+            <CardContent>
+              <Typography variant="h4" gutterBottom>
+                Finalizar e Revisar Campanha
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Revise todos os dados e finalize a criação da campanha.
+              </Typography>
+
+              {createCampaignError && (
+                <Alert severity="error" sx={{ mb: 3 }}>
+                  <AlertTitle>Erro ao criar campanha</AlertTitle>
+                  {createCampaignError}
+                </Alert>
+              )}
+
+              <Typography variant="h6" gutterBottom>
+                Resumo dos Dados:
+              </Typography>
+
+              <Box sx={{ mb: 3, p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
+                <Typography variant="body2">
+                  <strong>Cliente ID:</strong> {campaignData.clientId}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Contratos:</strong> {campaignData.contractIds.length}{" "}
+                  selecionado(s)
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Nome:</strong>{" "}
+                  {campaignData.basicData?.name || "Não informado"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Tipo:</strong>{" "}
+                  {campaignData.basicData?.type || "Não informado"}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={handleFinalizeCampaign}
+                  disabled={isCreating || !campaignData.clientId}
+                  startIcon={isCreating ? <CircularProgress size={20} /> : null}
+                  sx={{ minWidth: 200 }}
+                >
+                  {isCreating ? "Criando..." : "Finalizar e Criar Campanha"}
+                </Button>
+              </Box>
+
+            </CardContent>
+          </Card>
         );
       default:
         return null;
@@ -198,7 +272,7 @@ export const StepperContainer = () => {
               <Button
                 onClick={handleNext}
                 sx={{ mr: 1 }}
-                disabled={!isStepValid()}
+                disabled={!isStepValid(activeStep)}
               >
                 {activeStep === steps.length - 1 ? "Finalizar" : "Próximo"}
               </Button>
@@ -206,6 +280,56 @@ export const StepperContainer = () => {
           </>
         )}
       </div>
+
+      {/* Snackbars - Sempre visíveis independente do step */}
+      {/* Snackbar de Sucesso */}
+      <Snackbar
+        open={showSuccessSnackbar}
+        autoHideDuration={6000}
+        onClose={() => setShowSuccessSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setShowSuccessSnackbar(false)}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          Campanha criada com sucesso! Redirecionando...
+        </Alert>
+      </Snackbar>
+
+      {/* Snackbar de Erro */}
+      <Snackbar
+        open={showErrorSnackbar}
+        autoHideDuration={8000}
+        onClose={() => setShowErrorSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setShowErrorSnackbar(false)}
+          severity="error"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          Erro ao criar campanha: {createCampaignError || "Erro desconhecido"}
+        </Alert>
+      </Snackbar>
+
+      {/* Snackbar de Loading */}
+      <Snackbar
+        open={isCreating}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          severity="info"
+          variant="filled"
+          sx={{ width: "100%" }}
+          icon={<CircularProgress size={20} color="inherit" />}
+        >
+          Criando campanha... Por favor, aguarde.
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
