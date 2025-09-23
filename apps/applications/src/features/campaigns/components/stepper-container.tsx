@@ -17,7 +17,7 @@ import {
 
 const steps = [
   "Identifique o Cliente",
-  "Selecione um Contrato",
+  "Selecione os Contratos",
   "Dados Básicos",
   "Modelo de Negócio",
   "Configurações Avançadas",
@@ -32,7 +32,7 @@ export const StepperContainer = () => {
   // Form data state
   const [campaignData, setCampaignData] = useState({
     clientId: null as string | null,
-    contractId: null as string | null,
+    contractIds: [] as string[],
     basicData: {},
     businessModel: {},
     advancedSettings: {},
@@ -73,7 +73,7 @@ export const StepperContainer = () => {
     setCompleted({});
     setCampaignData({
       clientId: null,
-      contractId: null,
+      contractIds: [],
       basicData: {},
       businessModel: {},
       advancedSettings: {},
@@ -92,7 +92,7 @@ export const StepperContainer = () => {
       case 0:
         return !!campaignData.clientId;
       case 1:
-        return !!campaignData.contractId;
+        return campaignData.contractIds.length > 0;
       case 2: {
         const basicData = campaignData.basicData as {
           name?: string;
@@ -131,9 +131,9 @@ export const StepperContainer = () => {
         return (
           <ContractSelectionStep
             clientId={campaignData.clientId}
-            selectedContractId={campaignData.contractId}
-            onContractSelect={(contractId) =>
-              updateCampaignData("contractId", contractId)
+            selectedContractIds={campaignData.contractIds}
+            onContractSelect={(contractIds) =>
+              updateCampaignData("contractIds", contractIds)
             }
           />
         );
