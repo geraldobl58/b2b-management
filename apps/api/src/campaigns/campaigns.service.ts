@@ -139,6 +139,15 @@ export class CampaignsService {
             companyName: true,
             fantasyName: true,
             cnpj: true,
+            addresses: {
+              select: {
+                state: true,
+                city: true,
+                district: true,
+                zipcode: true,
+                street: true,
+              }
+            }
           },
         },
         contract: {
@@ -260,6 +269,15 @@ export class CampaignsService {
               companyName: true,
               fantasyName: true,
               cnpj: true,
+              addresses: {
+                select: {
+                  state: true,
+                  city: true,
+                  district: true,
+                  zipcode: true,
+                  street: true,
+                }
+              }
             },
           },
           contract: {
@@ -316,6 +334,15 @@ export class CampaignsService {
             companyName: true,
             fantasyName: true,
             cnpj: true,
+            addresses: {
+              select: {
+                state: true,
+                city: true,
+                district: true,
+                zipcode: true,
+                street: true,
+              }
+            }
           },
         },
         contract: {
@@ -508,6 +535,15 @@ export class CampaignsService {
             companyName: true,
             fantasyName: true,
             cnpj: true,
+            addresses: {
+              select: {
+                state: true,
+                city: true,
+                district: true,
+                zipcode: true,
+                street: true,
+              }
+            }
           },
         },
         contract: {
