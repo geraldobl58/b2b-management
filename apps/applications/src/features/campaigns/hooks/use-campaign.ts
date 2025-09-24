@@ -20,10 +20,9 @@ import { campaign } from "../http/campaign";
 interface UseCampaignParams {
   page?: number;
   limit?: number;
-  search?: string;
+  clientName?: string;
   type?: "MKT" | "SALES" | "RETENTION" | "UPSELL";
   branchType?: "MATRIZ" | "FILIAL";
-  clientId?: string;
   startDate?: string;
   endDate?: string;
 }
@@ -44,10 +43,6 @@ export const useCampaign = (initialParams?: UseCampaignParams) => {
     return limitParam ? parseInt(limitParam, 10) : initialParams?.limit || 10;
   });
 
-  const [search, setSearch] = useState(() => {
-    return searchParams.get("search") || initialParams?.search || "";
-  });
-
   const [type, setType] = useState(() => {
     const typeParam = searchParams.get("type") as
       | "MKT"
@@ -66,9 +61,10 @@ export const useCampaign = (initialParams?: UseCampaignParams) => {
     return branchTypeParam || initialParams?.branchType || undefined;
   });
 
-  const [clientId, setClientId] = useState(() => {
-    return searchParams.get("clientId") || initialParams?.clientId || "";
+  const [clientName, setClientName] = useState(() => {
+    return searchParams.get("clientName") || initialParams?.clientName || "";
   });
+
 
   const [startDate, setStartDate] = useState(() => {
     return searchParams.get("startDate") || initialParams?.startDate || "";
@@ -81,10 +77,9 @@ export const useCampaign = (initialParams?: UseCampaignParams) => {
   // Update URL when search params change
   const updateURL = useCallback(
     (params: {
-      search?: string;
+      clientName?: string;
       type?: string;
       branchType?: string;
-      clientId?: string;
       startDate?: string;
       endDate?: string;
       page?: number;
@@ -110,10 +105,9 @@ export const useCampaign = (initialParams?: UseCampaignParams) => {
   const applyFilters = useCallback(
     (filters: SearchCampaignValues) => {
       const newFilters = {
-        search: filters.search || "",
+        clientName: filters.clientName || "",
         type: filters.type || "",
         branchType: filters.branchType || "",
-        clientId: filters.clientId || "",
         startDate: filters.startDate || "",
         endDate: filters.endDate || "",
         page: 1, // Reset to first page when applying filters
@@ -121,10 +115,9 @@ export const useCampaign = (initialParams?: UseCampaignParams) => {
       };
 
       setPage(1);
-      setSearch(filters.search || "");
+      setClientName(filters.clientName || "");
       setType(filters.type);
       setBranchType(filters.branchType);
-      setClientId(filters.clientId || "");
       setStartDate(filters.startDate || "");
       setEndDate(filters.endDate || "");
 
@@ -136,18 +129,16 @@ export const useCampaign = (initialParams?: UseCampaignParams) => {
   // Clear all filters
   const clearFilters = useCallback(() => {
     setPage(1);
-    setSearch("");
+    setClientName("");
     setType(undefined);
     setBranchType(undefined);
-    setClientId("");
     setStartDate("");
     setEndDate("");
 
     updateURL({
-      search: "",
+      clientName: "",
       type: "",
       branchType: "",
-      clientId: "",
       startDate: "",
       endDate: "",
       page: 1,
@@ -162,15 +153,14 @@ export const useCampaign = (initialParams?: UseCampaignParams) => {
       {
         page,
         limit,
-        search,
+        clientName,
         type,
         branchType,
-        clientId,
         startDate,
         endDate,
       },
     ],
-    [page, limit, search, type, branchType, clientId, startDate, endDate]
+    [page, limit, clientName, type, branchType, startDate, endDate]
   );
 
   // Fetch campaigns data
@@ -185,10 +175,9 @@ export const useCampaign = (initialParams?: UseCampaignParams) => {
         const result = await campaign.getCampaigns({
           page,
           limit,
-          search: search || undefined,
+          clientName: clientName || undefined,
           type,
           branchType,
-          clientId: clientId || undefined,
           startDate: startDate || undefined,
           endDate: endDate || undefined,
         });
@@ -279,10 +268,9 @@ export const useCampaign = (initialParams?: UseCampaignParams) => {
     // Search and filter state
     page,
     limit,
-    search,
+    clientName,
     type,
     branchType,
-    clientId,
     startDate,
     endDate,
     setPage: (newPage: number) => {
@@ -290,10 +278,9 @@ export const useCampaign = (initialParams?: UseCampaignParams) => {
       updateURL({
         page: newPage,
         limit,
-        search,
+        clientName,
         type,
         branchType,
-        clientId,
         startDate,
         endDate,
       });
@@ -304,10 +291,9 @@ export const useCampaign = (initialParams?: UseCampaignParams) => {
       updateURL({
         page: 1,
         limit: newLimit,
-        search,
+        clientName,
         type,
         branchType,
-        clientId,
         startDate,
         endDate,
       });

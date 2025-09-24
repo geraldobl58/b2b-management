@@ -147,12 +147,9 @@ export const createCampaignSchema = z
 
 // Schema para busca de campanhas
 export const searchCampaignSchema = z.object({
-  page: z.number().int().min(1).optional().default(1),
-  limit: z.number().int().min(1).max(100).optional().default(10),
-  search: z.string().optional(),
+  clientName: z.string().optional(),
   type: z.enum(["MKT", "SALES", "RETENTION", "UPSELL"]).optional(),
   branchType: z.enum(["MATRIZ", "FILIAL"]).optional(),
-  clientId: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
 });
