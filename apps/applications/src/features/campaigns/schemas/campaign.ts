@@ -145,27 +145,6 @@ export const createCampaignSchema = z
     }
   );
 
-// Schema para atualização de campanha
-export const updateCampaignSchema = createCampaignSchema
-  .partial()
-  .extend({
-    id: z.string().min(1, "ID da campanha é obrigatório"),
-  })
-  .refine(
-    (data) => {
-      if (data.startDate && data.endDate) {
-        const startDate = new Date(data.startDate);
-        const endDate = new Date(data.endDate);
-        return endDate >= startDate;
-      }
-      return true;
-    },
-    {
-      message: "Data de fim deve ser posterior ou igual à data de início",
-      path: ["endDate"],
-    }
-  );
-
 // Schema para busca de campanhas
 export const searchCampaignSchema = z.object({
   page: z.number().int().min(1).optional().default(1),
@@ -180,7 +159,6 @@ export const searchCampaignSchema = z.object({
 
 // Tipos derivados dos schemas
 export type CreateCampaignValues = z.infer<typeof createCampaignSchema>;
-export type UpdateCampaignValues = z.infer<typeof updateCampaignSchema>;
 export type SearchCampaignValues = z.infer<typeof searchCampaignSchema>;
 export type ContactValues = z.infer<typeof contactSchema>;
 export type BusinessValues = z.infer<typeof businessSchema>;

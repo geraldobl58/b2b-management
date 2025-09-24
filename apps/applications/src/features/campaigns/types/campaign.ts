@@ -78,10 +78,6 @@ export interface CreateCampaignData {
   config: Config;
 }
 
-export interface UpdateCampaignData extends Partial<CreateCampaignData> {
-  id: string;
-}
-
 // Response interface
 export interface Campaign {
   id: string;

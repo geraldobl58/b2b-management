@@ -3,7 +3,6 @@
 import { cookies } from "next/headers";
 import {
   CreateCampaignValues,
-  UpdateCampaignValues,
   SearchCampaignValues,
 } from "@/features/campaigns/schemas/campaign";
 import { campaign } from "@/features/campaigns/http/campaign";
@@ -87,53 +86,6 @@ export async function getCampaignByIdAction(
   }
 }
 
-export async function updateCampaignAction(
-  id: string,
-  data: UpdateCampaignValues
-): Promise<ApiResponse<Campaign>> {
-  try {
-    const token = await getTokenFromCookies();
-    if (!token) {
-      return {
-        success: false,
-        error: "Token de autednticação não encontrado",
-      };
-    }
-
-    const response = await campaign.updateCampaign(id, data, token);
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error: unknown) {
-    console.error("Erro ao atualizar campanha:", error);
-    return handleApiError(error);
-  }
-}
-
-export async function deleteCampaignAction(
-  id: string
-): Promise<ApiResponse<{ success: boolean; message: string }>> {
-  try {
-    const token = await getTokenFromCookies();
-    if (!token) {
-      return {
-        success: false,
-        error: "Token de autenticação não encontrado",
-      };
-    }
-
-    const response = await campaign.deleteCampaign(id, token);
-    return {
-      success: true,
-      data: response,
-    };
-  } catch (error: unknown) {
-    console.error("Erro ao deletar campanha:", error);
-    return handleApiError(error);
-  }
-}
-
 export async function getCampaignsByClientAction(
   clientId: string,
   params?: Omit<SearchCampaignValues, "clientId">
@@ -158,30 +110,6 @@ export async function getCampaignsByClientAction(
     };
   } catch (error: unknown) {
     console.error("Erro ao buscar campanhas do cliente:", error);
-    return handleApiError(error);
-  }
-}
-
-export async function duplicateCampaignAction(
-  id: string,
-  data: { name: string; startDate: string; endDate: string }
-): Promise<ApiResponse<Campaign>> {
-  try {
-    const token = await getTokenFromCookies();
-    if (!token) {
-      return {
-        success: false,
-        error: "Token de autenticação não encontrado",
-      };
-    }
-
-    const response = await campaign.duplicateCampaign(id, data, token);
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error: unknown) {
-    console.error("Erro ao duplicar campanha:", error);
     return handleApiError(error);
   }
 }

@@ -1,9 +1,7 @@
-"use client";
-
-import { PlusIcon } from "lucide-react";
 import { Button } from "@mui/material";
 
 import { Header } from "@/components/header";
+import { PlusIcon } from "lucide-react";
 
 interface CampaignHeaderProps {
   onAddCampaign: () => void;

@@ -11,12 +11,7 @@ interface ActionsMenuProps<T> {
   onDelete?: (item: T) => void;
 }
 
-export const ActionsMenu = <T,>({
-  item,
-  onView,
-  onEdit,
-  onDelete,
-}: ActionsMenuProps<T>) => {
+export const ActionsMenu = <T,>({ item, onView }: ActionsMenuProps<T>) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -35,30 +30,18 @@ export const ActionsMenu = <T,>({
     handleClose();
   };
 
-  const handleEdit = () => {
-    if (onEdit) {
-      onEdit(item);
-    }
-    handleClose();
-  };
-
-  const handleDelete = () => {
-    if (onDelete) {
-      onDelete(item);
-    }
-    handleClose();
-  };
-
   return (
-    <IconButton
-      aria-label="more"
-      id="long-button"
-      aria-controls={open ? "long-menu" : undefined}
-      aria-expanded={open ? "true" : undefined}
-      aria-haspopup="true"
-      onClick={handleClick}
-    >
-      <MoreVert />
+    <>
+      <IconButton
+        aria-label="more"
+        id="long-button"
+        aria-controls={open ? "long-menu" : undefined}
+        aria-expanded={open ? "true" : undefined}
+        aria-haspopup="true"
+        onClick={handleClick}
+      >
+        <MoreVert />
+      </IconButton>
       <Menu
         id="long-menu"
         MenuListProps={{
@@ -77,9 +60,7 @@ export const ActionsMenu = <T,>({
         }}
       >
         {onView && <MenuItem onClick={handleView}>Visualizar</MenuItem>}
-        {onEdit && <MenuItem onClick={handleEdit}>Editar</MenuItem>}
-        {onDelete && <MenuItem onClick={handleDelete}>Deletar</MenuItem>}
       </Menu>
-    </IconButton>
+    </>
   );
 };

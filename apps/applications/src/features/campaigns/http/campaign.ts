@@ -1,7 +1,6 @@
 import api, { createApiWithToken } from "@/config/api";
 import {
   CreateCampaignValues,
-  UpdateCampaignValues,
   SearchCampaignValues,
 } from "@/features/campaigns/schemas/campaign";
 import {
@@ -17,11 +16,6 @@ const getApiInstance = (token?: string) => {
 };
 
 interface CreateCampaignResponse {
-  data: Campaign;
-  message: string;
-}
-
-interface UpdateCampaignResponse {
   data: Campaign;
   message: string;
 }
@@ -56,31 +50,6 @@ export const campaign = {
     return response.data;
   },
 
-  async updateCampaign(
-    id: string,
-    data: UpdateCampaignValues,
-    token?: string
-  ): Promise<UpdateCampaignResponse> {
-    const apiInstance = getApiInstance(token);
-    const response = await apiInstance.patch<UpdateCampaignResponse>(
-      `/campaigns/${id}`,
-      data
-    );
-    return response.data;
-  },
-
-  async deleteCampaign(
-    id: string,
-    token?: string
-  ): Promise<{ success: boolean; message: string }> {
-    const apiInstance = getApiInstance(token);
-    const response = await apiInstance.delete<{
-      success: boolean;
-      message: string;
-    }>(`/campaigns/${id}`);
-    return response.data;
-  },
-
   async getCampaignsByClient(
     clientId: string,
     params?: Omit<SearchCampaignValues, "clientId">,
@@ -90,19 +59,6 @@ export const campaign = {
     const response = await apiInstance.get<CampaignListResponse>(
       `/clients/${clientId}/campaigns`,
       { params }
-    );
-    return response.data;
-  },
-
-  async duplicateCampaign(
-    id: string,
-    data: { name: string; startDate: string; endDate: string },
-    token?: string
-  ): Promise<CreateCampaignResponse> {
-    const apiInstance = getApiInstance(token);
-    const response = await apiInstance.post<CreateCampaignResponse>(
-      `/campaigns/${id}/duplicate`,
-      data
     );
     return response.data;
   },

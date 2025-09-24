@@ -6,9 +6,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { cookieUtils } from "@/lib/cookies";
 import {
   createCampaignAction,
-  updateCampaignAction,
-  deleteCampaignAction,
-  duplicateCampaignAction,
   activateCampaignAction,
   deactivateCampaignAction,
   getCampaignStatsAction,
@@ -16,7 +13,6 @@ import {
 } from "@/features/campaigns/actions/campaign";
 import {
   CreateCampaignValues,
-  UpdateCampaignValues,
   SearchCampaignValues,
 } from "@/features/campaigns/schemas/campaign";
 import { campaign } from "../http/campaign";
@@ -228,60 +224,6 @@ export const useCampaign = (initialParams?: UseCampaignParams) => {
     },
   });
 
-  // Update campaign mutation
-  const updateCampaignMutation = useMutation({
-    mutationFn: async ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: UpdateCampaignValues;
-    }) => {
-      const result = await updateCampaignAction(id, data);
-      if (!result.success) {
-        throw new Error(result.error || "Erro ao atualizar campanha");
-      }
-      return result.data!;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
-    },
-  });
-
-  // Delete campaign mutation
-  const deleteCampaignMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const result = await deleteCampaignAction(id);
-      if (!result.success) {
-        throw new Error(result.error || "Erro ao deletar campanha");
-      }
-      return result.data!;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
-    },
-  });
-
-  // Duplicate campaign mutation
-  const duplicateCampaignMutation = useMutation({
-    mutationFn: async ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: { name: string; startDate: string; endDate: string };
-    }) => {
-      const result = await duplicateCampaignAction(id, data);
-      if (!result.success) {
-        throw new Error(result.error || "Erro ao duplicar campanha");
-      }
-      return result.data!;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
-    },
-  });
-
   // Activate campaign mutation
   const activateCampaignMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -377,21 +319,6 @@ export const useCampaign = (initialParams?: UseCampaignParams) => {
     isCreating: createCampaignMutation.isPending,
     createCampaign: createCampaignMutation.mutate,
     createCampaignError: createCampaignMutation.error?.message,
-
-    // Update campaign
-    isUpdating: updateCampaignMutation.isPending,
-    updateCampaign: updateCampaignMutation.mutate,
-    updateCampaignError: updateCampaignMutation.error?.message,
-
-    // Delete campaign
-    isDeleting: deleteCampaignMutation.isPending,
-    deleteCampaign: deleteCampaignMutation.mutateAsync,
-    deleteCampaignError: deleteCampaignMutation.error?.message,
-
-    // Duplicate campaign
-    isDuplicating: duplicateCampaignMutation.isPending,
-    duplicateCampaign: duplicateCampaignMutation.mutate,
-    duplicateCampaignError: duplicateCampaignMutation.error?.message,
 
     // Activate/Deactivate campaign
     isActivating: activateCampaignMutation.isPending,
